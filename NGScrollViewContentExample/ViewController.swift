@@ -40,44 +40,20 @@ class ViewController: UIViewController {
 
         scrollView.addSubview(contentView)
 
-//        contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor).isActive = true
-//        contentView.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
-
         scrollView.maximumZoomScale = 20
         scrollView.minimumZoomScale = 0.1
         scrollView.delegate = self
 
-        self.addColumn()
-        self.addColumn()
-        self.addColumn()
-        self.addColumn()
-        self.addColumn()
-        self.addColumn()
-        self.addColumn()
-        self.addColumn()
-        self.addColumn()
-        self.addColumn()
-        self.addColumn()
-        self.addColumn()
-        self.addColumn()
-        self.addRow()
-        self.addRow()
-        self.addRow()
-        self.addRow()
-        self.addRow()
-        self.addRow()
-        self.addRow()
-        self.addRow()
-        self.addRow()
-        self.addRow()
-        self.addRow()
-        self.addRow()
+        for _ in 0..<12 {
+            self.addColumn()
+        }
+        for _ in 0..<12 {
+            self.addRow()
+        }
     }
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-
-//        contentView.layoutIfNeeded()
 
         let widthScale = view.bounds.size.width / contentView.bounds.width
         let heightScale = view.bounds.size.height / contentView.bounds.height
@@ -101,7 +77,6 @@ class ViewController: UIViewController {
             guard let stackView = stackView as? UIStackView else { continue }
             stackView.addArrangedSubview(self.newColorView())
         }
-//        verticalStackView.addArrangedSubview(newColorView())
     }
 
     private func addRow() {
