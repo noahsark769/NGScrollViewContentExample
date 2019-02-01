@@ -25,8 +25,32 @@ class ViewController: UIViewController {
     private let contentView = UIView()
     private var hasSetInitialZoomScale = false
 
+    private let addRowButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("Add Row", for: .normal)
+        button.backgroundColor = .white
+        button.setTitleColor(.red, for: .normal)
+        return button
+    }()
+
+    private let addColButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("Add Column", for: .normal)
+        button.backgroundColor = .white
+        button.setTitleColor(.red, for: .normal)
+        return button
+    }()
+
     override func loadView() {
-        view = scrollView
+        view = UIView()
+
+        view.addSubview(scrollView)
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        view.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor).isActive = true
+        view.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor).isActive = true
+        view.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
+        view.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
+
         scrollView.backgroundColor = .white
         contentView.backgroundColor = .white
         contentView.addSubview(verticalStackView)
@@ -40,14 +64,32 @@ class ViewController: UIViewController {
 
         scrollView.addSubview(contentView)
 
+        // pin content size
+        contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor).isActive = true
+        contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor).isActive = true
+        contentView.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
+        contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
+
         scrollView.maximumZoomScale = 20
         scrollView.minimumZoomScale = 0.1
         scrollView.delegate = self
 
-        for _ in 0..<12 {
+        view.addSubview(addRowButton)
+        addRowButton.translatesAutoresizingMaskIntoConstraints = false
+        view.leadingAnchor.constraint(equalTo: addRowButton.leadingAnchor).isActive = true
+        view.topAnchor.constraint(equalTo: addRowButton.topAnchor).isActive = true
+        addRowButton.addTarget(self, action: #selector(addRow), for: .touchUpInside)
+
+        view.addSubview(addColButton)
+        addColButton.translatesAutoresizingMaskIntoConstraints = false
+        view.leadingAnchor.constraint(equalTo: addColButton.leadingAnchor).isActive = true
+        addColButton.topAnchor.constraint(equalTo: addRowButton.bottomAnchor).isActive = true
+        addColButton.addTarget(self, action: #selector(addColumn), for: .touchUpInside)
+
+        for _ in 0..<8 {
             self.addColumn()
         }
-        for _ in 0..<12 {
+        for _ in 0..<8 {
             self.addRow()
         }
     }
@@ -55,18 +97,18 @@ class ViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
-        let widthScale = view.bounds.size.width / contentView.bounds.width
-        let heightScale = view.bounds.size.height / contentView.bounds.height
+        let widthScale = scrollView.bounds.size.width / contentView.bounds.width
+        let heightScale = scrollView.bounds.size.height / contentView.bounds.height
         let minScale = min(widthScale, heightScale)
         scrollView.minimumZoomScale = minScale
 
-        if !hasSetInitialZoomScale {
+        if !hasSetInitialZoomScale && !minScale.isInfinite {
             scrollView.zoomScale = minScale
             hasSetInitialZoomScale = true
         }
     }
 
-    private func addColumn() {
+    @objc private func addColumn() {
         if verticalStackView.arrangedSubviews.isEmpty {
             let newStackView = UIStackView()
             newStackView.axis = .horizontal
@@ -79,7 +121,7 @@ class ViewController: UIViewController {
         }
     }
 
-    private func addRow() {
+    @objc private func addRow() {
         let numViewsToAdd = (verticalStackView.arrangedSubviews[0] as? UIStackView)?.arrangedSubviews.count ?? 0
         let newStackView = UIStackView()
         newStackView.axis = .horizontal
