@@ -219,14 +219,22 @@ class Renderer: NSObject, MTKViewDelegate {
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
         /// Respond to drawable size or orientation changes here
 
-//        let aspect = Float(size.width) / Float(size.height)
         let squareSize: Float = 40
         let spacing: Float = 20
-//        let offset: Float = 5
+    //        let offset: Float = 5
 
         let worldWidth: Float = squareSize * 8 + spacing * 7
         let worldHeight: Float = squareSize * 8 + spacing * 7
-        projectionMatrix = matrix_ortho_projection(left: 0, right: worldWidth, top: 0, bottom: worldHeight, near: 1, far: -1)
+        let aspect = Float(size.width) / Float(size.height)
+
+        if size.width > size.height {
+            // landscape mode
+            projectionMatrix = matrix_ortho_projection(left: 0, right: worldWidth * aspect, top: 0, bottom: worldHeight, near: 1, far: -1)
+        } else {
+            // portrait mode
+            projectionMatrix = matrix_ortho_projection(left: 0, right: worldWidth, top: 0, bottom: worldHeight * 1 / aspect, near: 1, far: -1)
+        }
+
 //        projectionMatrix = matrix_ortho_projection(left: 0, right: 2, top: 0, bottom: 2, near: 1, far: -1)
         view.setNeedsDisplay()
     }
