@@ -22,6 +22,7 @@ class ViewController: UIViewController {
         return view
     }()
     private let scrollView = UIScrollView()
+    private let metalView = MetalView()
     private let contentView = UIView()
     private var hasSetInitialZoomScale = false
 
@@ -43,6 +44,13 @@ class ViewController: UIViewController {
 
     override func loadView() {
         view = UIView()
+
+        view.addSubview(metalView)
+        metalView.translatesAutoresizingMaskIntoConstraints = false
+        view.safeAreaLayoutGuide.leadingAnchor.constraint(equalTo: metalView.leadingAnchor).isActive = true
+        view.safeAreaLayoutGuide.trailingAnchor.constraint(equalTo: metalView.trailingAnchor).isActive = true
+        view.safeAreaLayoutGuide.topAnchor.constraint(equalTo: metalView.topAnchor).isActive = true
+        view.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: metalView.bottomAnchor).isActive = true
 
         view.addSubview(scrollView)
         scrollView.translatesAutoresizingMaskIntoConstraints = false

@@ -11,6 +11,9 @@
 		A130BDE32203602C00E586F6 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A130BDE22203602C00E586F6 /* ViewController.swift */; };
 		A130BDE82203602D00E586F6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A130BDE72203602D00E586F6 /* Assets.xcassets */; };
 		A130BDEB2203602D00E586F6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A130BDE92203602D00E586F6 /* LaunchScreen.storyboard */; };
+		D0CC398323837AEF0009DF51 /* MetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0CC398223837AEF0009DF51 /* MetalView.swift */; };
+		D0CC398523837B6A0009DF51 /* Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0CC398423837B6A0009DF51 /* Renderer.swift */; };
+		D0CC398823837CF90009DF51 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = D0CC398723837CF90009DF51 /* Shaders.metal */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +23,10 @@
 		A130BDE72203602D00E586F6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A130BDEA2203602D00E586F6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		A130BDEC2203602D00E586F6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D0CC398223837AEF0009DF51 /* MetalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalView.swift; sourceTree = "<group>"; };
+		D0CC398423837B6A0009DF51 /* Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
+		D0CC398623837BF10009DF51 /* ShaderTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderTypes.h; sourceTree = "<group>"; };
+		D0CC398723837CF90009DF51 /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +64,10 @@
 				A130BDE72203602D00E586F6 /* Assets.xcassets */,
 				A130BDE92203602D00E586F6 /* LaunchScreen.storyboard */,
 				A130BDEC2203602D00E586F6 /* Info.plist */,
+				D0CC398223837AEF0009DF51 /* MetalView.swift */,
+				D0CC398423837B6A0009DF51 /* Renderer.swift */,
+				D0CC398623837BF10009DF51 /* ShaderTypes.h */,
+				D0CC398723837CF90009DF51 /* Shaders.metal */,
 			);
 			path = NGScrollViewContentExample;
 			sourceTree = "<group>";
@@ -131,8 +142,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D0CC398523837B6A0009DF51 /* Renderer.swift in Sources */,
+				D0CC398323837AEF0009DF51 /* MetalView.swift in Sources */,
 				A130BDE32203602C00E586F6 /* ViewController.swift in Sources */,
 				A130BDE12203602C00E586F6 /* AppDelegate.swift in Sources */,
+				D0CC398823837CF90009DF51 /* Shaders.metal in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -279,6 +293,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.noahgilmore.NGScrollViewContentExamplw;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = NGScrollViewContentExample/ShaderTypes.h;
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -297,6 +312,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.noahgilmore.NGScrollViewContentExamplw;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = NGScrollViewContentExample/ShaderTypes.h;
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
