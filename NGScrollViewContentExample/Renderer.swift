@@ -100,10 +100,10 @@ class Renderer: NSObject, MTKViewDelegate {
 //                indices.append(currentVertexCount + 2)
 //            }
 //        }
-        vertices.append(Vertex(position: SIMD3<Float>(0, 0, -1)))
-        vertices.append(Vertex(position: SIMD3<Float>(1, 0, -1)))
-        vertices.append(Vertex(position: SIMD3<Float>(0, 1, -1)))
-        vertices.append(Vertex(position: SIMD3<Float>(1, 1, -1)))
+        vertices.append(Vertex(position: SIMD3<Float>(0, 0, 0)))
+        vertices.append(Vertex(position: SIMD3<Float>(1, 0, 0)))
+        vertices.append(Vertex(position: SIMD3<Float>(0, 1, 0)))
+        vertices.append(Vertex(position: SIMD3<Float>(1, 1, 0)))
         indices.append(0)
         indices.append(1)
         indices.append(2)
@@ -192,8 +192,7 @@ class Renderer: NSObject, MTKViewDelegate {
                 renderEncoder.pushDebugGroup("Draw Box")
 
                 renderEncoder.setCullMode(.back) // ?
-
-                renderEncoder.setFrontFacing(.counterClockwise)
+                renderEncoder.setFrontFacing(.clockwise)
 
                 renderEncoder.setRenderPipelineState(pipelineState)
 
@@ -220,8 +219,8 @@ class Renderer: NSObject, MTKViewDelegate {
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
         /// Respond to drawable size or orientation changes here
 
-        let aspect = Float(size.width) / Float(size.height)
-        projectionMatrix = matrix_perspective_right_hand(fovyRadians: radians_from_degrees(65), aspectRatio:aspect, nearZ: 0.1, farZ: 100.0)
+//        let aspect = Float(size.width) / Float(size.height)
+        projectionMatrix = matrix_ortho_projection(left: -1, right: 1, top: -1, bottom: 1, near: 1, far: -1)
         view.setNeedsDisplay()
     }
 }
@@ -256,6 +255,24 @@ func matrix_perspective_right_hand(fovyRadians fovy: Float, aspectRatio: Float, 
                                          vector_float4( 0,  0, zs * nearZ, 0)))
 }
 
+func matrix_ortho_projection(left: Float, right: Float, top: Float, bottom: Float, near: Float, far: Float) -> matrix_float4x4 {
+    let xs = 2 / (right - left)
+    let ys = 2 / (top - bottom)
+    let zs = -2 / (far - near)
+    let tx = -((right + left) / (right - left))
+    let ty = -((top + bottom) / (top - bottom))
+    let tz = -((far + near) / (far - near))
+
+    return matrix_float4x4.init(
+        columns: (
+            vector_float4(xs,  0,  0, tx),
+            vector_float4( 0, ys,  0, ty),
+            vector_float4( 0,  0, zs, tz),
+            vector_float4( 0,  0,  0,  1)
+        )
+    )
+}
+
 func radians_from_degrees(_ degrees: Float) -> Float {
     return (degrees / 180) * .pi
 }
@@ -263,6 +280,13 @@ func radians_from_degrees(_ degrees: Float) -> Float {
 func matrix4x4_scale(x: Float, y: Float) -> matrix_float4x4 {
     return matrix_float4x4.init(columns:(vector_float4(x, 0, 0, 0),
                                          vector_float4(0, y, 0, 0),
+                                         vector_float4(0, 0, 1, 0),
+                                         vector_float4(0, 0, 0, 1)))
+}
+
+func matrix4x4_identity() -> matrix_float4x4 {
+    return matrix_float4x4.init(columns:(vector_float4(1, 0, 0, 0),
+                                         vector_float4(0, 1, 0, 0),
                                          vector_float4(0, 0, 1, 0),
                                          vector_float4(0, 0, 0, 1)))
 }
