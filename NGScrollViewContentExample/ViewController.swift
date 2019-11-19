@@ -102,6 +102,8 @@ class ViewController: UIViewController {
         }
 
         scrollView.isHidden = true
+        addColButton.isHidden = true
+        addRowButton.isHidden = true
     }
 
     override func viewDidLayoutSubviews() {
