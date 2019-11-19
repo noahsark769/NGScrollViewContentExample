@@ -22,10 +22,12 @@ final class MetalView: MTKView {
         }
 
         self.device = defaultDevice
-        self.clearColor = MTLClearColor(red: 1, green: 0, blue: 0, alpha: 0)
+        self.clearColor = MTLClearColor(red: 1, green: 1, blue: 1, alpha: 1)
         self.isOpaque = false
         self.isUserInteractionEnabled = false
 //        self.presentsWithTransaction = true
+//        self.isPaused = true
+//        self.enableSetNeedsDisplay = true
 
         guard let newRenderer = Renderer(metalKitView: self) else {
             print("Renderer cannot be initialized")

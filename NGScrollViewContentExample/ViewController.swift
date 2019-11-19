@@ -100,6 +100,8 @@ class ViewController: UIViewController {
         for _ in 0..<8 {
             self.addRow()
         }
+
+        scrollView.isHidden = true
     }
 
     override func viewDidLayoutSubviews() {

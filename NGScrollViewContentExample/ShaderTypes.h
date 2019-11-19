@@ -45,5 +45,10 @@ typedef struct
     matrix_float4x4 modelViewMatrix;
 } Uniforms;
 
+typedef struct
+{
+    vector_float3 position;
+} Vertex;
+
 #endif /* ShaderTypes_h */
 

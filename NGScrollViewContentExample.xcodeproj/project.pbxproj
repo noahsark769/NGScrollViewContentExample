@@ -291,7 +291,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.noahgilmore.NGScrollViewContentExamplw;
+				PRODUCT_BUNDLE_IDENTIFIER = com.noahgilmore.NGScrollViewContentExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = NGScrollViewContentExample/ShaderTypes.h;
 				SWIFT_VERSION = 4.2;
@@ -310,7 +310,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.noahgilmore.NGScrollViewContentExamplw;
+				PRODUCT_BUNDLE_IDENTIFIER = com.noahgilmore.NGScrollViewContentExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = NGScrollViewContentExample/ShaderTypes.h;
 				SWIFT_VERSION = 4.2;
