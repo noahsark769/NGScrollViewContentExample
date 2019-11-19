@@ -78,38 +78,38 @@ class Renderer: NSObject, MTKViewDelegate {
 
         var vertices: [Vertex] = []
         var indices: [UInt16] = []
-//        let squareSize: Float = 40
-//        let spacing: Float = 20
-//        let offset: Float = 5
-//        for y in 0..<8 {
-//            for x in 0..<8 {
-//                let currentVertexCount = UInt16(vertices.count)
-//
-//                let xCoordinate = (squareSize + spacing) * Float(x)
-//                let yCoordinate = (squareSize + spacing) * Float(y)
-//                vertices.append(Vertex(position: SIMD3<Float>(xCoordinate - offset, yCoordinate - offset, 0)))
-//                vertices.append(Vertex(position: SIMD3<Float>(xCoordinate + offset, yCoordinate - offset, 0)))
-//                vertices.append(Vertex(position: SIMD3<Float>(xCoordinate - offset, yCoordinate + offset, 0)))
-//                vertices.append(Vertex(position: SIMD3<Float>(xCoordinate + offset, yCoordinate + offset, 0)))
-//
-//                indices.append(currentVertexCount)
-//                indices.append(currentVertexCount + 1)
-//                indices.append(currentVertexCount + 2)
-//                indices.append(currentVertexCount + 1)
-//                indices.append(currentVertexCount + 3)
-//                indices.append(currentVertexCount + 2)
-//            }
-//        }
-        vertices.append(Vertex(position: SIMD3<Float>(0, 0, 0)))
-        vertices.append(Vertex(position: SIMD3<Float>(1, 0, 0)))
-        vertices.append(Vertex(position: SIMD3<Float>(0, 1, 0)))
-        vertices.append(Vertex(position: SIMD3<Float>(1, 1, 0)))
-        indices.append(0)
-        indices.append(1)
-        indices.append(2)
-        indices.append(1)
-        indices.append(3)
-        indices.append(2)
+        let squareSize: Float = 40
+        let spacing: Float = 20
+        let offset: Float = 5
+        for y in 0..<8 {
+            for x in 0..<8 {
+                let currentVertexCount = UInt16(vertices.count)
+
+                let xCoordinate = (squareSize + spacing) * Float(x)
+                let yCoordinate = (squareSize + spacing) * Float(y)
+                vertices.append(Vertex(position: SIMD3<Float>(xCoordinate - offset, yCoordinate - offset, 0)))
+                vertices.append(Vertex(position: SIMD3<Float>(xCoordinate + offset, yCoordinate - offset, 0)))
+                vertices.append(Vertex(position: SIMD3<Float>(xCoordinate - offset, yCoordinate + offset, 0)))
+                vertices.append(Vertex(position: SIMD3<Float>(xCoordinate + offset, yCoordinate + offset, 0)))
+
+                indices.append(currentVertexCount)
+                indices.append(currentVertexCount + 1)
+                indices.append(currentVertexCount + 2)
+                indices.append(currentVertexCount + 1)
+                indices.append(currentVertexCount + 3)
+                indices.append(currentVertexCount + 2)
+            }
+        }
+//        vertices.append(Vertex(position: SIMD3<Float>(0, 0, 0)))
+//        vertices.append(Vertex(position: SIMD3<Float>(1, 0, 0)))
+//        vertices.append(Vertex(position: SIMD3<Float>(0, 1, 0)))
+//        vertices.append(Vertex(position: SIMD3<Float>(1, 1, 0)))
+//        indices.append(0)
+//        indices.append(1)
+//        indices.append(2)
+//        indices.append(1)
+//        indices.append(3)
+//        indices.append(2)
         guard let vertexBuffer = device.makeBuffer(bytes: UnsafeMutablePointer(mutating: vertices), length: MemoryLayout<Vertex>.size * vertices.count, options: [.cpuCacheModeWriteCombined]) else {
             fatalError("Unable to allocate vertex buffer")
         }
@@ -161,7 +161,7 @@ class Renderer: NSObject, MTKViewDelegate {
         /// Update any game state before rendering
 
         uniforms[0].projectionMatrix = projectionMatrix
-        uniforms[0].modelViewMatrix = matrix4x4_scale(x: 1, y: 1)
+        uniforms[0].modelViewMatrix = matrix4x4_identity()
     }
 
     func draw(in view: MTKView) {
@@ -220,7 +220,14 @@ class Renderer: NSObject, MTKViewDelegate {
         /// Respond to drawable size or orientation changes here
 
 //        let aspect = Float(size.width) / Float(size.height)
-        projectionMatrix = matrix_ortho_projection(left: -1, right: 1, top: -1, bottom: 1, near: 1, far: -1)
+        let squareSize: Float = 40
+        let spacing: Float = 20
+//        let offset: Float = 5
+
+        let worldWidth: Float = squareSize * 8 + spacing * 7
+        let worldHeight: Float = squareSize * 8 + spacing * 7
+        projectionMatrix = matrix_ortho_projection(left: 0, right: worldWidth, top: 0, bottom: worldHeight, near: 1, far: -1)
+//        projectionMatrix = matrix_ortho_projection(left: 0, right: 2, top: 0, bottom: 2, near: 1, far: -1)
         view.setNeedsDisplay()
     }
 }
@@ -256,20 +263,20 @@ func matrix_perspective_right_hand(fovyRadians fovy: Float, aspectRatio: Float, 
 }
 
 func matrix_ortho_projection(left: Float, right: Float, top: Float, bottom: Float, near: Float, far: Float) -> matrix_float4x4 {
-    let xs = 2 / (right - left)
-    let ys = 2 / (top - bottom)
-    let zs = -2 / (far - near)
+    let xs = 2.0 / (right - left)
+    let ys = 2.0 / (top - bottom)
+    let zs = -2.0 / (far - near)
     let tx = -((right + left) / (right - left))
     let ty = -((top + bottom) / (top - bottom))
     let tz = -((far + near) / (far - near))
 
     return matrix_float4x4.init(
-        columns: (
+        rows: [
             vector_float4(xs,  0,  0, tx),
             vector_float4( 0, ys,  0, ty),
             vector_float4( 0,  0, zs, tz),
             vector_float4( 0,  0,  0,  1)
-        )
+        ]
     )
 }
 
