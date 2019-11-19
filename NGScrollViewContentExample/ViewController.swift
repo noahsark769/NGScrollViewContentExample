@@ -46,13 +46,13 @@ class ViewController: UIViewController {
 
         view.addSubview(scrollView)
         scrollView.translatesAutoresizingMaskIntoConstraints = false
-        view.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor).isActive = true
-        view.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor).isActive = true
-        view.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
-        view.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
+        view.safeAreaLayoutGuide.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor).isActive = true
+        view.safeAreaLayoutGuide.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor).isActive = true
+        view.safeAreaLayoutGuide.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
+        view.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
 
-        scrollView.backgroundColor = .white
-        contentView.backgroundColor = .white
+        scrollView.backgroundColor = .clear
+        contentView.backgroundColor = .clear
         contentView.addSubview(verticalStackView)
         contentView.translatesAutoresizingMaskIntoConstraints = false
         verticalStackView.translatesAutoresizingMaskIntoConstraints = false
@@ -76,13 +76,13 @@ class ViewController: UIViewController {
 
         view.addSubview(addRowButton)
         addRowButton.translatesAutoresizingMaskIntoConstraints = false
-        view.leadingAnchor.constraint(equalTo: addRowButton.leadingAnchor).isActive = true
-        view.topAnchor.constraint(equalTo: addRowButton.topAnchor).isActive = true
+        view.safeAreaLayoutGuide.leadingAnchor.constraint(equalTo: addRowButton.leadingAnchor).isActive = true
+        view.safeAreaLayoutGuide.topAnchor.constraint(equalTo: addRowButton.topAnchor).isActive = true
         addRowButton.addTarget(self, action: #selector(addRow), for: .touchUpInside)
 
         view.addSubview(addColButton)
         addColButton.translatesAutoresizingMaskIntoConstraints = false
-        view.leadingAnchor.constraint(equalTo: addColButton.leadingAnchor).isActive = true
+        view.safeAreaLayoutGuide.leadingAnchor.constraint(equalTo: addColButton.leadingAnchor).isActive = true
         addColButton.topAnchor.constraint(equalTo: addRowButton.bottomAnchor).isActive = true
         addColButton.addTarget(self, action: #selector(addColumn), for: .touchUpInside)
 
