@@ -44,6 +44,13 @@ class Renderer: NSObject, MTKViewDelegate {
     private let vertexBuffer: MTLBuffer
     private let indexBuffer: MTLBuffer
 
+    var scale: Float = 1
+    var contentOffsetX: Float = 0
+    var contentOffsetY: Float = 0
+    var contentWidth: Float = 0
+    var contentHeight: Float = 0
+    private var viewSize: CGSize = .zero
+
     init?(metalKitView: MTKView) {
         self.device = metalKitView.device!
         guard let queue = self.device.makeCommandQueue() else { return nil }
@@ -88,9 +95,9 @@ class Renderer: NSObject, MTKViewDelegate {
                 let xCoordinate = (squareSize + spacing) * Float(x)
                 let yCoordinate = (squareSize + spacing) * Float(y)
                 vertices.append(Vertex(position: SIMD3<Float>(xCoordinate - offset, yCoordinate - offset, 0)))
-                vertices.append(Vertex(position: SIMD3<Float>(xCoordinate + offset, yCoordinate - offset, 0)))
-                vertices.append(Vertex(position: SIMD3<Float>(xCoordinate - offset, yCoordinate + offset, 0)))
-                vertices.append(Vertex(position: SIMD3<Float>(xCoordinate + offset, yCoordinate + offset, 0)))
+                vertices.append(Vertex(position: SIMD3<Float>(xCoordinate + squareSize + offset, yCoordinate - offset, 0)))
+                vertices.append(Vertex(position: SIMD3<Float>(xCoordinate - offset, yCoordinate + squareSize + offset, 0)))
+                vertices.append(Vertex(position: SIMD3<Float>(xCoordinate + squareSize + offset, yCoordinate + squareSize + offset, 0)))
 
                 indices.append(currentVertexCount)
                 indices.append(currentVertexCount + 1)
@@ -160,8 +167,36 @@ class Renderer: NSObject, MTKViewDelegate {
     private func updateGameState() {
         /// Update any game state before rendering
 
+//        let squareSize: Float = 40
+//        let spacing: Float = 20
+    //        let offset: Float = 5
+
+//        let worldWidth: Float = squareSize * 8 + spacing * 7
+//        let worldHeight: Float = squareSize * 8 + spacing * 7
+        let aspect = Float(self.contentWidth) / Float(self.contentHeight)
+
+//        if self.contentWidth > self.contentHeight {
+//            // landscape mode
+//            // Does not work, need to account for content offset
+//            projectionMatrix = matrix_ortho_projection(left: self.contentOffsetX, right: self.contentWidth * aspect, top: self.contentOffsetY, bottom: self.contentHeight, near: 1, far: -1)
+//        } else {
+            // portrait mode
+        projectionMatrix = matrix_ortho_projection(
+            left: self.contentOffsetX,
+//            right: contentOffsetX + self.contentWidth / self.scale,
+            right: Float(self.viewSize.width),
+            top: self.contentOffsetY,
+//            bottom: (self.contentOffsetY + (self.contentHeight / self.scale)) * 1 / aspect,
+            bottom: Float(self.viewSize.height),
+            near: 1,
+            far: -1
+        )
+//        }
+
         uniforms[0].projectionMatrix = projectionMatrix
         uniforms[0].modelViewMatrix = matrix4x4_identity()
+//            * matrix4x4_translation(self.contentOffsetX, self.contentOffsetY, 0)
+            * matrix4x4_scale(x: self.scale, y: self.scale)
     }
 
     func draw(in view: MTKView) {
@@ -219,23 +254,24 @@ class Renderer: NSObject, MTKViewDelegate {
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
         /// Respond to drawable size or orientation changes here
 
-        let squareSize: Float = 40
-        let spacing: Float = 20
-    //        let offset: Float = 5
-
-        let worldWidth: Float = squareSize * 8 + spacing * 7
-        let worldHeight: Float = squareSize * 8 + spacing * 7
-        let aspect = Float(size.width) / Float(size.height)
-
-        if size.width > size.height {
-            // landscape mode
-            projectionMatrix = matrix_ortho_projection(left: 0, right: worldWidth * aspect, top: 0, bottom: worldHeight, near: 1, far: -1)
-        } else {
-            // portrait mode
-            projectionMatrix = matrix_ortho_projection(left: 0, right: worldWidth, top: 0, bottom: worldHeight * 1 / aspect, near: 1, far: -1)
-        }
+//        let squareSize: Float = 40
+//        let spacing: Float = 20
+//    //        let offset: Float = 5
+//
+//        let worldWidth: Float = squareSize * 8 + spacing * 7
+//        let worldHeight: Float = squareSize * 8 + spacing * 7
+//        let aspect = Float(size.width) / Float(size.height)
+//
+//        if size.width > size.height {
+//            // landscape mode
+//            projectionMatrix = matrix_ortho_projection(left: 0, right: worldWidth * aspect, top: 0, bottom: worldHeight, near: 1, far: -1)
+//        } else {
+//            // portrait mode
+//            projectionMatrix = matrix_ortho_projection(left: 0, right: worldWidth, top: 0, bottom: worldHeight * 1 / aspect, near: 1, far: -1)
+//        }
 
 //        projectionMatrix = matrix_ortho_projection(left: 0, right: 2, top: 0, bottom: 2, near: 1, far: -1)
+        self.viewSize = CGSize(width: size.width / view.contentScaleFactor, height: size.height / view.contentScaleFactor)
         view.setNeedsDisplay()
     }
 }

@@ -21,7 +21,7 @@ class ViewController: UIViewController {
         view.spacing = 20
         return view
     }()
-    private let scrollView = UIScrollView()
+    @objc private let scrollView = UIScrollView()
     private let metalView = MetalView()
     private let contentView = UIView()
     private var hasSetInitialZoomScale = false
@@ -41,6 +41,8 @@ class ViewController: UIViewController {
         button.setTitleColor(.red, for: .normal)
         return button
     }()
+
+    var zoomScaleObservation: NSKeyValueObservation?
 
     override func loadView() {
         view = UIView()
@@ -76,10 +78,11 @@ class ViewController: UIViewController {
         contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor).isActive = true
         contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor).isActive = true
         contentView.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
-        contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
+//        contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
 
         scrollView.maximumZoomScale = 20
-        scrollView.minimumZoomScale = 0.1
+        scrollView.minimumZoomScale = 1
+//        scrollView.setZoomScale(1, animated: true)
         scrollView.delegate = self
 
         view.addSubview(addRowButton)
@@ -97,28 +100,38 @@ class ViewController: UIViewController {
         for _ in 0..<8 {
             self.addColumn()
         }
+
         for _ in 0..<8 {
             self.addRow()
         }
 
-        scrollView.isHidden = true
-        addColButton.isHidden = true
-        addRowButton.isHidden = true
+//        metalView.scale = Float(scrollView.zoomScale)
+        metalView.contentOffset = scrollView.contentOffset
+        metalView.contentSize = scrollView.contentSize
+
+//        scrollView.isHidden = true
+//        addColButton.isHidden = true
+//        addRowButton.isHidden = true
+
+//        zoomScaleObservation = self.observe(\.contentView.contentInset, changeHandler: { [unowned self] object, change in
+//            print("Observed zoomScale: \(self.scrollView.contentInset)")
+//        })
     }
 
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
 
-        let widthScale = scrollView.bounds.size.width / contentView.bounds.width
-        let heightScale = scrollView.bounds.size.height / contentView.bounds.height
-        let minScale = min(widthScale, heightScale)
-        scrollView.minimumZoomScale = minScale
-
-        if !hasSetInitialZoomScale && !minScale.isInfinite {
-            scrollView.zoomScale = minScale
-            hasSetInitialZoomScale = true
-        }
-    }
+//    override func viewDidLayoutSubviews() {
+//        super.viewDidLayoutSubviews()
+//
+//        let widthScale = scrollView.bounds.size.width / contentView.bounds.width
+//        let heightScale = scrollView.bounds.size.height / contentView.bounds.height
+//        let minScale = min(widthScale, heightScale)
+//        scrollView.minimumZoomScale = minScale
+//
+//        if !hasSetInitialZoomScale && !minScale.isInfinite {
+//            scrollView.zoomScale = minScale
+//            hasSetInitialZoomScale = true
+//        }
+//    }
 
     @objc private func addColumn() {
         if verticalStackView.arrangedSubviews.isEmpty {
@@ -157,6 +170,18 @@ class ViewController: UIViewController {
 extension ViewController: UIScrollViewDelegate {
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         return self.contentView
+    }
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        print("""
+            Scroll view scrolled!
+                contentoffset: \(scrollView.contentOffset),
+                zoomScale: \(scrollView.zoomScale),
+                contentSize: \(scrollView.contentSize)
+        """)
+        metalView.scale = Float(scrollView.zoomScale)
+        metalView.contentOffset = scrollView.contentOffset
+        metalView.contentSize = scrollView.contentSize
     }
 }
 

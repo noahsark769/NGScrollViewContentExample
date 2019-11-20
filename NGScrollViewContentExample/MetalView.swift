@@ -12,6 +12,30 @@ import MetalKit
 final class MetalView: MTKView {
     var renderer: Renderer!
 
+    var scale: Float {
+        get { return renderer.scale }
+        set {
+            renderer.scale = newValue
+            self.setNeedsDisplay()
+        }
+    }
+
+    var contentOffset: CGPoint = .zero {
+        didSet {
+            renderer.contentOffsetX = Float(self.contentOffset.x)
+            renderer.contentOffsetY = Float(self.contentOffset.y)
+            self.setNeedsDisplay()
+        }
+    }
+
+    var contentSize: CGSize = .zero {
+        didSet {
+            renderer.contentWidth = Float(self.contentSize.width)
+            renderer.contentHeight = Float(self.contentSize.height)
+            self.setNeedsDisplay()
+        }
+    }
+
     init() {
         super.init(frame: .zero, device: MTLCreateSystemDefaultDevice())
 
@@ -27,7 +51,7 @@ final class MetalView: MTKView {
         self.isUserInteractionEnabled = false
 //        self.presentsWithTransaction = true
 //        self.isPaused = true
-//        self.enableSetNeedsDisplay = true
+        self.enableSetNeedsDisplay = true
 
         guard let newRenderer = Renderer(metalKitView: self) else {
             print("Renderer cannot be initialized")
