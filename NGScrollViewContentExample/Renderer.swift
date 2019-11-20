@@ -50,6 +50,7 @@ class Renderer: NSObject, MTKViewDelegate {
     var contentWidth: Float = 0
     var contentHeight: Float = 0
     private var viewSize: CGSize = .zero
+    var contentBounds: CGRect = .zero
 
     init?(metalKitView: MTKView) {
         self.device = metalKitView.device!
@@ -88,8 +89,8 @@ class Renderer: NSObject, MTKViewDelegate {
         let squareSize: Float = 40
         let spacing: Float = 20
         let offset: Float = 5
-        for y in 0..<8 {
-            for x in 0..<8 {
+        for y in 0..<20 {
+            for x in 0..<20 {
                 let currentVertexCount = UInt16(vertices.count)
 
                 let xCoordinate = (squareSize + spacing) * Float(x)
@@ -181,13 +182,23 @@ class Renderer: NSObject, MTKViewDelegate {
 //            projectionMatrix = matrix_ortho_projection(left: self.contentOffsetX, right: self.contentWidth * aspect, top: self.contentOffsetY, bottom: self.contentHeight, near: 1, far: -1)
 //        } else {
             // portrait mode
+        let effectiveRect = self.contentBounds.applying(CGAffineTransform(scaleX: CGFloat(1 / self.scale), y: CGFloat(1 / self.scale)))
         projectionMatrix = matrix_ortho_projection(
-            left: self.contentOffsetX,
-//            right: contentOffsetX + self.contentWidth / self.scale,
-            right: Float(self.viewSize.width),
-            top: self.contentOffsetY,
-//            bottom: (self.contentOffsetY + (self.contentHeight / self.scale)) * 1 / aspect,
-            bottom: Float(self.viewSize.height),
+//            left: self.contentOffsetX,
+//            right: //max(
+//                contentOffsetX + self.contentWidth,
+//                Float(self.viewSize.width)
+//            ),
+//            top: self.contentOffsetY,
+//            bottom: //max(
+//                (self.contentOffsetY + self.contentHeight) * 1 / aspect,
+//                Float(self.viewSize.height)
+//            ),
+//            bottom: (),
+            left: Float(effectiveRect.origin.x),
+            right: Float(effectiveRect.origin.x + effectiveRect.width),
+            top: Float(effectiveRect.origin.y),
+            bottom: Float(effectiveRect.origin.y + effectiveRect.height),
             near: 1,
             far: -1
         )
@@ -196,7 +207,7 @@ class Renderer: NSObject, MTKViewDelegate {
         uniforms[0].projectionMatrix = projectionMatrix
         uniforms[0].modelViewMatrix = matrix4x4_identity()
 //            * matrix4x4_translation(self.contentOffsetX, self.contentOffsetY, 0)
-            * matrix4x4_scale(x: self.scale, y: self.scale)
+//            * matrix4x4_scale(x: self.scale, y: self.scale)
     }
 
     func draw(in view: MTKView) {

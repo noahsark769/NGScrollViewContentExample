@@ -97,11 +97,11 @@ class ViewController: UIViewController {
         addColButton.topAnchor.constraint(equalTo: addRowButton.bottomAnchor).isActive = true
         addColButton.addTarget(self, action: #selector(addColumn), for: .touchUpInside)
 
-        for _ in 0..<8 {
+        for _ in 0..<20 {
             self.addColumn()
         }
 
-        for _ in 0..<8 {
+        for _ in 0..<20 {
             self.addRow()
         }
 
@@ -177,11 +177,13 @@ extension ViewController: UIScrollViewDelegate {
             Scroll view scrolled!
                 contentoffset: \(scrollView.contentOffset),
                 zoomScale: \(scrollView.zoomScale),
-                contentSize: \(scrollView.contentSize)
+                contentSize: \(scrollView.contentSize),
+                bounds: \(scrollView.bounds)
         """)
         metalView.scale = Float(scrollView.zoomScale)
         metalView.contentOffset = scrollView.contentOffset
         metalView.contentSize = scrollView.contentSize
+        metalView.contentBounds = scrollView.bounds
     }
 }
 

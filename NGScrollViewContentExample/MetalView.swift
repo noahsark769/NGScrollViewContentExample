@@ -36,6 +36,13 @@ final class MetalView: MTKView {
         }
     }
 
+    var contentBounds: CGRect = .zero {
+        didSet {
+            renderer.contentBounds = self.contentBounds
+            self.setNeedsDisplay()
+        }
+    }
+
     init() {
         super.init(frame: .zero, device: MTLCreateSystemDefaultDevice())
 
