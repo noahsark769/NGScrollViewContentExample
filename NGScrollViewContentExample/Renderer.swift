@@ -233,8 +233,6 @@ class Renderer: NSObject, MTKViewDelegate {
     ) {
         /// Per frame updates hare
 
-        print("Render frame with scale: \(self.scale), contentOffset: \(self.contentOffsetX), \(self.contentOffsetY)")
-
         _ = inFlightSemaphore.wait(timeout: DispatchTime.distantFuture)
 
         if let commandBuffer = commandQueue.makeCommandBuffer() {

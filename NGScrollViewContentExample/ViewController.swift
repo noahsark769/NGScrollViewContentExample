@@ -211,10 +211,10 @@ class ViewController: UIViewController {
 
     @objc private func scrollViewUpdated() {
         print("Observed update! \(self.scrollView.contentSize)")
-        self.metalView.scale = Float(self.scrollView.zoomScale)
+//        self.metalView.scale = Float(self.scrollView.zoomScale)
 //        self.metalView.contentOffset = self.scrollView.contentOffset
 //        self.metalView.contentSize = self.scrollView.contentSize
-        self.metalView.contentBounds = self.scrollView.bounds
+//        self.metalView.contentBounds = self.scrollView.bounds
     }
 
     @objc private func addColumn() {
@@ -263,6 +263,7 @@ extension ViewController: UIScrollViewDelegate {
     }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
+//        print("scroll. is bouncing? \(scrollView.isZoomBouncing)")
 //        print("""
 //            Scroll view scrolled!
 //                contentoffset: \(scrollView.contentOffset),
@@ -279,6 +280,15 @@ extension ViewController: UIScrollViewDelegate {
 //        if scrollView.zoomScale != 1 {
 //        CATransaction.begin()
 //        CATransaction.setAnimationDuration(5)
+//        CATransaction.begin()
+//        CATransaction.setDisableActions(true)
+        
+            self.metalView.animationsEnabled = scrollView.isZoomBouncing && contentView.layer.animationKeys() != nil
+        if let animation = contentView.layer.animation(forKey: "position") {
+            // todo: serious demeter violation lol
+            self.metalView.metalLayer.animationTimingFunction = animation.timingFunction
+            self.metalView.metalLayer.animationDuration = animation.duration
+        }
             self.metalView.contentBounds = scrollView.bounds
             self.metalView.scale = Float(scrollView.zoomScale)
 //        CATransaction.commit()
@@ -289,6 +299,7 @@ extension ViewController: UIScrollViewDelegate {
 //        }
 
         worldView.updateWindow()
+//        CATransaction.commit()
 
 //        if scrollView.zoomScale != scrollView.minimumZoomScale && scrollView.zoomScale != scrollView.maximumZoomScale {
 //            self.lastScrollViewPosition = scrollView.bounds.origin
@@ -296,6 +307,7 @@ extension ViewController: UIScrollViewDelegate {
     }
 
     func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
+//        print("End zooming")
 //        print("""
 //            Scroll view ended zooming!
 //                contentoffset: \(scrollView.contentOffset),
@@ -321,13 +333,17 @@ extension ViewController: UIScrollViewDelegate {
 //        CATransaction.setCompletionBlock {
 //            print("Transaction...complete!")
 //        }
-            self.metalView.contentBounds = scrollView.bounds
-            self.metalView.scale = Float(scrollView.zoomScale)
+//        CATransaction.begin()
+//        CATransaction.setDisableActions(true)
+//            self.metalView.contentBounds = scrollView.bounds
+//            self.metalView.scale = Float(scrollView.zoomScale)
+//        CATransaction.commit()
 //            self.metalView.draw()
 //        CATransaction.commit()
     }
 
     func scrollViewWillBeginZooming(_ scrollView: UIScrollView, with view: UIView?) {
+//        print("Begin zooming")
 //        print("""
 //            Scroll will begin zooming!
 //                contentoffset: \(scrollView.contentOffset),

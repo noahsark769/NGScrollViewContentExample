@@ -11,6 +11,9 @@ import MetalKit
 
 class CustomMetalLayer: CAMetalLayer {
     let renderer : Renderer
+    var scaleAnimationsEnabled: Bool = true
+    var animationTimingFunction: CAMediaTimingFunction?
+    var animationDuration: CFTimeInterval = 0
 
     @NSManaged var scale: Float
     @NSManaged var contentWidth: Float
@@ -23,6 +26,7 @@ class CustomMetalLayer: CAMetalLayer {
         self.renderer = Renderer(device: device, sampleCount: 1, colorPixelFormat: .bgra8Unorm, depthStencilPixelFormat: .invalid)!
         super.init()
         self.device = device
+        self.fillMode = .backwards
     }
 
     override init(layer: Any) {
@@ -30,8 +34,10 @@ class CustomMetalLayer: CAMetalLayer {
             fatalError("Something's up with the layer, dude")
         }
         self.renderer = layer.renderer
+        self.scaleAnimationsEnabled = layer.scaleAnimationsEnabled
 
         super.init(layer: layer)
+        self.fillMode = layer.fillMode
     }
 
     required init?(coder: NSCoder) {
@@ -39,25 +45,20 @@ class CustomMetalLayer: CAMetalLayer {
     }
 
     override func display() {
-        if let effectiveScale = self.presentation()?.scale {
-            renderer.scale = effectiveScale
+        let effectiveLayer: CustomMetalLayer
+        if self.scaleAnimationsEnabled {
+            guard let layer = self.presentation() else {
+                return
+            }
+            effectiveLayer = layer
+        } else {
+            effectiveLayer = self
         }
-
-        if let effectiveContentHeight = self.presentation()?.contentHeight {
-            renderer.contentHeight = effectiveContentHeight
-        }
-
-        if let effectiveContentWidth = self.presentation()?.contentWidth {
-            renderer.contentWidth = effectiveContentWidth
-        }
-
-        if let effectiveContentOffsetX = self.presentation()?.contentOffsetX {
-            renderer.contentOffsetX = effectiveContentOffsetX
-        }
-
-        if let effectiveContentOffsetY = self.presentation()?.contentOffsetY {
-            renderer.contentOffsetY = effectiveContentOffsetY
-        }
+        renderer.scale = effectiveLayer.scale
+        renderer.contentHeight = effectiveLayer.contentHeight
+        renderer.contentWidth = effectiveLayer.contentWidth
+        renderer.contentOffsetX = effectiveLayer.contentOffsetX
+        renderer.contentOffsetY = effectiveLayer.contentOffsetY
 
         super.display()
     }
@@ -78,9 +79,23 @@ class CustomMetalLayer: CAMetalLayer {
     }
 
     override func action(forKey event: String) -> CAAction? {
+        guard self.scaleAnimationsEnabled else {
+            return nil
+        }
+
+        guard let effectiveLayer = self.presentation() else {
+            return super.action(forKey: event)
+        }
+
         if Self.customAnimatableKeys.contains(event) {
-            let animation = CABasicAnimation()
-            animation.fromValue = self.value(forKey: event) // ?
+            let animation = CABasicAnimation(keyPath: event)
+//            if (effectiveLayer.animationKeys() ?? []).contains(event) {
+//                print("Might be a duplicate action!!")
+//                return super.action(forKey: event)
+//            }
+            animation.fromValue = effectiveLayer.value(forKey: event) // ?
+            animation.duration = self.animationDuration
+            animation.timingFunction = self.animationTimingFunction
             return animation
         }
         return super.action(forKey: event)
@@ -97,13 +112,21 @@ class MetalLayerView: UIView {
         }
     }
 
+    var animationsEnabled: Bool {
+        get {
+            return self.metalLayer.scaleAnimationsEnabled
+        }
+        set {
+            self.metalLayer.scaleAnimationsEnabled = newValue
+        }
+    }
+
     var contentBounds: CGRect = .zero {
         didSet {
             self.metalLayer.contentOffsetX = Float(self.contentBounds.origin.x)
             self.metalLayer.contentOffsetY = Float(self.contentBounds.origin.y)
             self.metalLayer.contentWidth = Float(self.contentBounds.size.width)
             self.metalLayer.contentHeight = Float(self.contentBounds.size.height)
-            self.layer.setNeedsDisplay()
         }
     }
 
@@ -176,6 +199,10 @@ class MetalLayerView: UIView {
         colorAttachment.loadAction = .clear
         colorAttachment.storeAction = .store
         colorAttachment.clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 0)
+
+        if metalLayer.scaleAnimationsEnabled {
+            print("Animating render frame with scale: \(metalLayer.renderer.scale), contentOffset: \(metalLayer.renderer.contentOffsetX), \(metalLayer.renderer.contentOffsetY)")
+        }
 
         metalLayer.renderer.draw(
             passDescriptor: passDescriptor,
