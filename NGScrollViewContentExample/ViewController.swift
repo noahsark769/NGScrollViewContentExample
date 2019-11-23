@@ -14,6 +14,40 @@ extension UIColor {
     }
 }
 
+class ScrollViewZoomObserver: NSObject {
+    private var lastValue: CGFloat? = nil
+    private var link: CADisplayLink!
+    private let scrollView: UIScrollView
+    private let contentView: UIView
+    private let onTick: (CGFloat, CGPoint) -> Void
+
+    init(scrollView: UIScrollView, contentView: UIView, onTick: @escaping (CGFloat, CGPoint) -> Void) {
+        self.scrollView = scrollView
+        self.contentView = contentView
+        self.onTick = onTick
+//        self.contentView.layer.anchorPoint = .zero
+        super.init()
+
+        link = CADisplayLink(target: self, selector: #selector(didTick))
+        link.add(to: RunLoop.main, forMode: .default)
+    }
+
+    @objc private func didTick() {
+        let value = contentView.layer.presentation()?.transform.m11
+        if lastValue != value {
+            self.lastValue = value
+//            print("""
+//                New value!
+//                    frame: \(contentView.layer.presentation()?.frame)
+//                    bounds: \(contentView.layer.presentation()?.bounds)
+//                    position: \(contentView.layer.presentation()?.position)
+//                    anchorPoint: \(contentView.layer.presentation()?.anchorPoint)
+//            """)
+            self.onTick(value!, contentView.layer.presentation()!.position)
+        }
+    }
+}
+
 class ViewController: UIViewController {
     private let verticalStackView: UIStackView = {
         let view = UIStackView()
@@ -21,10 +55,11 @@ class ViewController: UIViewController {
         view.spacing = 20
         return view
     }()
-    @objc private let scrollView = UIScrollView()
-    private let metalView = MetalView()
+    @objc dynamic private let scrollView = UIScrollView()
+    private let metalView = MetalLayerView()
     private let contentView = UIView()
     private var hasSetInitialZoomScale = false
+    private var observer: ScrollViewZoomObserver!
 
     private let addRowButton: UIButton = {
         let button = UIButton()
@@ -43,6 +78,9 @@ class ViewController: UIViewController {
     }()
 
     var zoomScaleObservation: NSKeyValueObservation?
+    var contentSizeObservation: NSKeyValueObservation?
+
+    private lazy var worldView = WorldView(scrollView: self.scrollView)!
 
     override func loadView() {
         view = UIView()
@@ -55,6 +93,7 @@ class ViewController: UIViewController {
         view.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: metalView.bottomAnchor).isActive = true
 
         view.addSubview(scrollView)
+        scrollView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         view.safeAreaLayoutGuide.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor).isActive = true
         view.safeAreaLayoutGuide.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor).isActive = true
@@ -78,9 +117,9 @@ class ViewController: UIViewController {
         contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor).isActive = true
         contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor).isActive = true
         contentView.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
-//        contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
+        contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
 
-        scrollView.maximumZoomScale = 20
+        scrollView.maximumZoomScale = 5
         scrollView.minimumZoomScale = 1
 //        scrollView.setZoomScale(1, animated: true)
         scrollView.delegate = self
@@ -105,17 +144,54 @@ class ViewController: UIViewController {
             self.addRow()
         }
 
+        view.addSubview(worldView)
+        worldView.translatesAutoresizingMaskIntoConstraints = false
+        worldView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12).isActive = true
+        worldView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12).isActive = true
+        worldView.heightAnchor.constraint(equalToConstant: 100).isActive = true
+        worldView.widthAnchor.constraint(equalToConstant: 100).isActive = true
+
+//        scrollView.bouncesZoom = false
+
+
 //        metalView.scale = Float(scrollView.zoomScale)
-        metalView.contentOffset = scrollView.contentOffset
-        metalView.contentSize = scrollView.contentSize
+//        metalView.contentOffset = scrollView.contentOffset
+//        metalView.contentSize = scrollView.contentSize
+//        scrollView.bouncesZoom = false
 
 //        scrollView.isHidden = true
 //        addColButton.isHidden = true
 //        addRowButton.isHidden = true
 
-//        zoomScaleObservation = self.observe(\.contentView.contentInset, changeHandler: { [unowned self] object, change in
-//            print("Observed zoomScale: \(self.scrollView.contentInset)")
+//        zoomScaleObservation = self.observe(\.scrollView.zoomScale, options: [.new, .initial], changeHandler: { [unowned self] object, change in
+//            print("Observed zoomScale: \(self.scrollView.zoomScale)")
+//            self.metalView.scale = Float(self.scrollView.zoomScale)
+//            self.metalView.contentOffset = self.scrollView.contentOffset
+//            self.metalView.contentSize = self.scrollView.contentSize
+//            self.metalView.contentBounds = self.scrollView.bounds
 //        })
+//        contentSizeObservation = scrollView.observe(\.contentSize, options: [.new, .initial], changeHandler: { [unowned self] object, change in
+//            print("Observed contentSize: \(self.scrollView.contentSize)")
+//            self.metalView.scale = Float(self.scrollView.zoomScale)
+//            self.metalView.contentOffset = self.scrollView.contentOffset
+//            self.metalView.contentSize = self.scrollView.contentSize
+//            self.metalView.contentBounds = self.scrollView.bounds
+//        })
+
+//        self.listen(to: self.scrollView, keyPath: "zoomScale", selector: #selector(scrollViewUpdated))
+//        self.listen(to: self.scrollView, keyPath: "contentOffset", selector: #selector(scrollViewUpdated))
+//        observer = ScrollViewZoomObserver(scrollView: scrollView, contentView: contentView) { [unowned self] zoom, position in
+//            self.metalView.contentBounds = CGRect(
+//                x: self.lastScrollViewPosition.x * ((590 - position.x) / 590),
+//                y: self.lastScrollViewPosition.y * ((620 - position.y) / 620),
+//                width: self.scrollView.bounds.width,
+//                height: self.scrollView.bounds.height
+//            )
+//            self.metalView.scale = Float(zoom)
+//        }
+
+//        self.addObserver(self, forKeyPath: "scrollView.zoomScale", options: [.new, .initial], context: nil)
+//        self.scrollViewUpdated()
     }
 
 
@@ -132,6 +208,14 @@ class ViewController: UIViewController {
 //            hasSetInitialZoomScale = true
 //        }
 //    }
+
+    @objc private func scrollViewUpdated() {
+        print("Observed update! \(self.scrollView.contentSize)")
+        self.metalView.scale = Float(self.scrollView.zoomScale)
+//        self.metalView.contentOffset = self.scrollView.contentOffset
+//        self.metalView.contentSize = self.scrollView.contentSize
+        self.metalView.contentBounds = self.scrollView.bounds
+    }
 
     @objc private func addColumn() {
         if verticalStackView.arrangedSubviews.isEmpty {
@@ -165,6 +249,12 @@ class ViewController: UIViewController {
 //        colorView.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
         return colorView
     }
+
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        print("HM OBsERVED vALue")
+    }
+
+    var lastScrollViewPosition: CGPoint = .zero
 }
 
 extension ViewController: UIScrollViewDelegate {
@@ -173,17 +263,98 @@ extension ViewController: UIScrollViewDelegate {
     }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        print("""
-            Scroll view scrolled!
-                contentoffset: \(scrollView.contentOffset),
-                zoomScale: \(scrollView.zoomScale),
-                contentSize: \(scrollView.contentSize),
-                bounds: \(scrollView.bounds)
-        """)
-        metalView.scale = Float(scrollView.zoomScale)
-        metalView.contentOffset = scrollView.contentOffset
-        metalView.contentSize = scrollView.contentSize
-        metalView.contentBounds = scrollView.bounds
+//        print("""
+//            Scroll view scrolled!
+//                contentoffset: \(scrollView.contentOffset),
+//                zoomScale: \(scrollView.zoomScale),
+//                contentSize: \(scrollView.contentSize),
+//                bounds: \(scrollView.bounds),
+//                presentationlayer position: \(self.contentView.layer.presentation()?.position),
+//                scrollViewAnimationKeys: \(self.contentView.layer.animationKeys())
+//        """)
+
+//        metalView.contentOffset = scrollView.contentOffset
+//        metalView.contentSize = scrollView.contentSize
+//        UIView.animate(withDuration: 2, animations: {
+//        if scrollView.zoomScale != 1 {
+//        CATransaction.begin()
+//        CATransaction.setAnimationDuration(5)
+            self.metalView.contentBounds = scrollView.bounds
+            self.metalView.scale = Float(scrollView.zoomScale)
+//        CATransaction.commit()
+//        }
+//        })
+//        if self.contentView.layer.animationKeys() != nil {
+//            self.contentView.layer.removeAllAnimations()
+//        }
+
+        worldView.updateWindow()
+
+//        if scrollView.zoomScale != scrollView.minimumZoomScale && scrollView.zoomScale != scrollView.maximumZoomScale {
+//            self.lastScrollViewPosition = scrollView.bounds.origin
+//        }
+    }
+
+    func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
+//        print("""
+//            Scroll view ended zooming!
+//                contentoffset: \(scrollView.contentOffset),
+//                zoomScale: \(scrollView.zoomScale),
+//                contentSize: \(scrollView.contentSize),
+//                bounds: \(scrollView.bounds)
+//        """)
+//        metalView.scale = Float(scrollView.zoomScale)
+//        metalView.contentOffset = scrollView.contentOffset
+//        metalView.contentSize = scrollView.contentSize
+//        metalView.contentBounds = scrollView.bounds
+//        worldView.updateWindow()
+//
+//        if scrollView.zoomScale > 2 {
+////            scrollView.isUserInteractionEnabled = false
+//            scrollView.zoom(to: CGRect(x: 0, y: 0, width: 768, height: 1004), animated: true)
+//        } else if scrollView.zoomScale < 1 {
+//            scrollView.setZoomScale(1, animated: false)
+//        }
+
+//        CATransaction.begin()
+//        CATransaction.setAnimationDuration(4)
+//        CATransaction.setCompletionBlock {
+//            print("Transaction...complete!")
+//        }
+            self.metalView.contentBounds = scrollView.bounds
+            self.metalView.scale = Float(scrollView.zoomScale)
+//            self.metalView.draw()
+//        CATransaction.commit()
+    }
+
+    func scrollViewWillBeginZooming(_ scrollView: UIScrollView, with view: UIView?) {
+//        print("""
+//            Scroll will begin zooming!
+//                contentoffset: \(scrollView.contentOffset),
+//                zoomScale: \(scrollView.zoomScale),
+//                contentSize: \(scrollView.contentSize),
+//                bounds: \(scrollView.bounds)
+//        """)
+    }
+
+    func scrollViewDidZoom(_ scrollView: UIScrollView) {
+//        print("""
+//            Scroll view zoomed!
+//                contentoffset: \(scrollView.contentOffset),
+//                zoomScale: \(scrollView.zoomScale),
+//                contentSize: \(scrollView.contentSize),
+//                bounds: \(scrollView.bounds)
+//        """)
+    }
+
+    func scrollViewDidChangeAdjustedContentInset(_ scrollView: UIScrollView) {
+//        print("""
+//            Scroll view adjusted content inset!
+//                contentoffset: \(scrollView.contentOffset),
+//                zoomScale: \(scrollView.zoomScale),
+//                contentSize: \(scrollView.contentSize),
+//                bounds: \(scrollView.bounds)
+//        """)
     }
 }
 

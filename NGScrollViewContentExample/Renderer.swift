@@ -50,10 +50,14 @@ class Renderer: NSObject, MTKViewDelegate {
     var contentWidth: Float = 0
     var contentHeight: Float = 0
     private var viewSize: CGSize = .zero
-    var contentBounds: CGRect = .zero
 
-    init?(metalKitView: MTKView) {
-        self.device = metalKitView.device!
+    init?(
+        device: MTLDevice,
+        sampleCount: Int,
+        colorPixelFormat: MTLPixelFormat,
+        depthStencilPixelFormat: MTLPixelFormat
+    ) {
+        self.device = device
         guard let queue = self.device.makeCommandQueue() else { return nil }
         self.commandQueue = queue
 
@@ -66,13 +70,13 @@ class Renderer: NSObject, MTKViewDelegate {
 
         uniforms = UnsafeMutableRawPointer(dynamicUniformBuffer.contents()).bindMemory(to:Uniforms.self, capacity:1)
 
-        metalKitView.depthStencilPixelFormat = MTLPixelFormat.depth32Float_stencil8
-        metalKitView.colorPixelFormat = MTLPixelFormat.bgra8Unorm_srgb
-        metalKitView.sampleCount = 1
-
         do {
-            pipelineState = try Renderer.buildRenderPipelineWithDevice(device: device,
-                                                                       metalKitView: metalKitView)
+            pipelineState = try Renderer.buildRenderPipelineWithDevice(
+                device: device,
+                sampleCount: sampleCount,
+                colorPixelFormat: colorPixelFormat,
+                depthStencilPixelFormat: depthStencilPixelFormat
+            )
         } catch {
             print("Unable to compile render pipeline state.  Error info: \(error)")
             return nil
@@ -133,8 +137,12 @@ class Renderer: NSObject, MTKViewDelegate {
 
     }
 
-    class func buildRenderPipelineWithDevice(device: MTLDevice,
-                                             metalKitView: MTKView) throws -> MTLRenderPipelineState {
+    class func buildRenderPipelineWithDevice(
+        device: MTLDevice,
+        sampleCount: Int,
+        colorPixelFormat: MTLPixelFormat,
+        depthStencilPixelFormat: MTLPixelFormat
+    ) throws -> MTLRenderPipelineState {
         /// Build a render state pipeline object
 
         let library = device.makeDefaultLibrary()
@@ -144,13 +152,13 @@ class Renderer: NSObject, MTKViewDelegate {
 
         let pipelineDescriptor = MTLRenderPipelineDescriptor()
         pipelineDescriptor.label = "RenderPipeline"
-        pipelineDescriptor.sampleCount = metalKitView.sampleCount
+        pipelineDescriptor.sampleCount = sampleCount
         pipelineDescriptor.vertexFunction = vertexFunction
         pipelineDescriptor.fragmentFunction = fragmentFunction
 
-        pipelineDescriptor.colorAttachments[0].pixelFormat = metalKitView.colorPixelFormat
-        pipelineDescriptor.depthAttachmentPixelFormat = metalKitView.depthStencilPixelFormat
-        pipelineDescriptor.stencilAttachmentPixelFormat = metalKitView.depthStencilPixelFormat
+        pipelineDescriptor.colorAttachments[0].pixelFormat = colorPixelFormat
+        pipelineDescriptor.depthAttachmentPixelFormat = depthStencilPixelFormat
+        pipelineDescriptor.stencilAttachmentPixelFormat = depthStencilPixelFormat
 
         return try device.makeRenderPipelineState(descriptor: pipelineDescriptor)
     }
@@ -174,7 +182,7 @@ class Renderer: NSObject, MTKViewDelegate {
 
 //        let worldWidth: Float = squareSize * 8 + spacing * 7
 //        let worldHeight: Float = squareSize * 8 + spacing * 7
-        let aspect = Float(self.contentWidth) / Float(self.contentHeight)
+//        let aspect = Float(self.contentWidth) / Float(self.contentHeight)
 
 //        if self.contentWidth > self.contentHeight {
 //            // landscape mode
@@ -182,7 +190,12 @@ class Renderer: NSObject, MTKViewDelegate {
 //            projectionMatrix = matrix_ortho_projection(left: self.contentOffsetX, right: self.contentWidth * aspect, top: self.contentOffsetY, bottom: self.contentHeight, near: 1, far: -1)
 //        } else {
             // portrait mode
-        let effectiveRect = self.contentBounds.applying(CGAffineTransform(scaleX: CGFloat(1 / self.scale), y: CGFloat(1 / self.scale)))
+        let effectiveRect = CGRect(
+            x: CGFloat(self.contentOffsetX),
+            y: CGFloat(self.contentOffsetY),
+            width: CGFloat(self.contentWidth),
+            height: CGFloat(self.contentHeight)
+        ).applying(CGAffineTransform(scaleX: CGFloat(1 / self.scale), y: CGFloat(1 / self.scale)))
         projectionMatrix = matrix_ortho_projection(
 //            left: self.contentOffsetX,
 //            right: //max(
@@ -211,7 +224,16 @@ class Renderer: NSObject, MTKViewDelegate {
     }
 
     func draw(in view: MTKView) {
+        self.draw(passDescriptor: view.currentRenderPassDescriptor!, drawable: view.currentDrawable)
+    }
+
+    func draw(
+        passDescriptor: MTLRenderPassDescriptor,
+        drawable: MTLDrawable?
+    ) {
         /// Per frame updates hare
+
+        print("Render frame with scale: \(self.scale), contentOffset: \(self.contentOffsetX), \(self.contentOffsetY)")
 
         _ = inFlightSemaphore.wait(timeout: DispatchTime.distantFuture)
 
@@ -228,9 +250,9 @@ class Renderer: NSObject, MTKViewDelegate {
 
             /// Delay getting the currentRenderPassDescriptor until we absolutely need it to avoid
             ///   holding onto the drawable and blocking the display pipeline any longer than necessary
-            let renderPassDescriptor = view.currentRenderPassDescriptor
+//            let renderPassDescriptor = view.currentRenderPassDescriptor
 
-            if let renderPassDescriptor = renderPassDescriptor, let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) {
+            if let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: passDescriptor) {
 
                 /// Final pass rendering code here
                 renderEncoder.label = "Primary Render Encoder"
@@ -242,7 +264,7 @@ class Renderer: NSObject, MTKViewDelegate {
 
                 renderEncoder.setRenderPipelineState(pipelineState)
 
-                renderEncoder.setDepthStencilState(depthState)
+//                renderEncoder.setDepthStencilState(depthState)
 
                 renderEncoder.setVertexBuffer(self.vertexBuffer, offset: 0, index: 0)
                 renderEncoder.setVertexBuffer(dynamicUniformBuffer, offset:uniformBufferOffset, index: 1)
@@ -252,13 +274,16 @@ class Renderer: NSObject, MTKViewDelegate {
                 renderEncoder.popDebugGroup()
 
                 renderEncoder.endEncoding()
-
-                if let drawable = view.currentDrawable {
-                    commandBuffer.present(drawable)
-                }
+//                if let drawable = drawable {
+//                    commandBuffer.present(drawable)
+//                }
             }
 
             commandBuffer.commit()
+            commandBuffer.waitUntilScheduled()
+            if let drawable = drawable {
+                drawable.present()
+            }
         }
     }
 
