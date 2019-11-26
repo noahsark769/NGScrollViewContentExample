@@ -56,7 +56,7 @@ class ViewController: UIViewController {
         return view
     }()
     @objc dynamic private let scrollView = UIScrollView()
-    private let metalView = MetalLayerView()
+    private let metalView = MetalView()
     private let contentView = UIView()
     private var hasSetInitialZoomScale = false
     private var observer: ScrollViewZoomObserver!
@@ -85,12 +85,12 @@ class ViewController: UIViewController {
     override func loadView() {
         view = UIView()
 
-        view.addSubview(metalView)
+        contentView.addSubview(metalView)
         metalView.translatesAutoresizingMaskIntoConstraints = false
-        view.safeAreaLayoutGuide.leadingAnchor.constraint(equalTo: metalView.leadingAnchor).isActive = true
-        view.safeAreaLayoutGuide.trailingAnchor.constraint(equalTo: metalView.trailingAnchor).isActive = true
-        view.safeAreaLayoutGuide.topAnchor.constraint(equalTo: metalView.topAnchor).isActive = true
-        view.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: metalView.bottomAnchor).isActive = true
+        contentView.safeAreaLayoutGuide.leadingAnchor.constraint(equalTo: metalView.leadingAnchor).isActive = true
+        contentView.safeAreaLayoutGuide.trailingAnchor.constraint(equalTo: metalView.trailingAnchor).isActive = true
+        contentView.safeAreaLayoutGuide.topAnchor.constraint(equalTo: metalView.topAnchor).isActive = true
+        contentView.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: metalView.bottomAnchor).isActive = true
 
         view.addSubview(scrollView)
         scrollView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -283,14 +283,15 @@ extension ViewController: UIScrollViewDelegate {
 //        CATransaction.begin()
 //        CATransaction.setDisableActions(true)
         
-            self.metalView.animationsEnabled = scrollView.isZoomBouncing && contentView.layer.animationKeys() != nil
-        if let animation = contentView.layer.animation(forKey: "position") {
-            // todo: serious demeter violation lol
-            self.metalView.metalLayer.animationTimingFunction = animation.timingFunction
-            self.metalView.metalLayer.animationDuration = animation.duration
-        }
-            self.metalView.contentBounds = scrollView.bounds
-            self.metalView.scale = Float(scrollView.zoomScale)
+//            self.metalView.animationsEnabled = scrollView.isZoomBouncing && contentView.layer.animationKeys() != nil
+//        if let animation = contentView.layer.animation(forKey: "position") {
+//            // todo: serious demeter violation lol
+//            self.metalView.metalLayer.animationTimingFunction = animation.timingFunction
+//            self.metalView.metalLayer.animationDuration = animation.duration
+//        }
+            print("Rendering content view bounds: \(contentView.bounds)")
+            self.metalView.contentBounds = contentView.bounds
+            self.metalView.scale = 1
 //        CATransaction.commit()
 //        }
 //        })
