@@ -23,7 +23,7 @@ class CustomMetalLayer: CAMetalLayer {
 
     override init() {
         let device = MTLCreateSystemDefaultDevice()!
-        self.renderer = Renderer(device: device, sampleCount: 1, colorPixelFormat: .bgra8Unorm, depthStencilPixelFormat: .invalid)!
+        self.renderer = Renderer(device: device, sampleCount: 1, colorPixelFormat: .bgra8Unorm)!
         super.init()
         self.device = device
         self.fillMode = .backwards
@@ -246,7 +246,16 @@ final class MetalView: MTKView {
             self.renderer.contentOffsetY = Float(self.contentBounds.origin.y)
             self.renderer.contentWidth = Float(self.contentBounds.size.width)
             self.renderer.contentHeight = Float(self.contentBounds.size.height)
-            print("New bounds: \(self.contentBounds)")
+//            print("""
+//                New bounds:
+//                x: \(self.contentBounds.x) - \(self.renderer.contentOffsetX)
+//                y: \(self.contentBounds.y) - \(self.renderer.contentOffsetY)
+//                width: \(self.contentBounds.width) - \(self.renderer.contentWidth)
+//                height: \(self.contentBounds.height) - \(self.renderer.contentHeight)
+//            """)
+//            print("""
+//                x: \(self.renderer.contentOffsetX)
+//            """)
             self.setNeedsDisplay()
         }
     }
@@ -268,11 +277,10 @@ final class MetalView: MTKView {
 //        self.isPaused = true
         self.enableSetNeedsDisplay = true
 
-        self.depthStencilPixelFormat = MTLPixelFormat.depth32Float_stencil8
-        self.colorPixelFormat = MTLPixelFormat.bgra8Unorm_srgb
+//        self.depthStencilPixelFormat = MTLPixelFormat.depth32Float_stencil8
         self.sampleCount = 1
 
-        guard let newRenderer = Renderer(device: self.device!, sampleCount: self.sampleCount, colorPixelFormat: self.colorPixelFormat, depthStencilPixelFormat: self.depthStencilPixelFormat) else {
+        guard let newRenderer = Renderer(device: self.device!, sampleCount: self.sampleCount, colorPixelFormat: self.colorPixelFormat) else {
             print("Renderer cannot be initialized")
             return
         }

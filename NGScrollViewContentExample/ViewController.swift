@@ -300,10 +300,6 @@ extension ViewController: UIScrollViewDelegate {
     }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        print("""
-            Scroll view scrolled!
-                zoomScale: \(scrollView.zoomScale)
-        """)
         if !scrollView.isZoomBouncing {
             let visibleRect = scrollView.convert(scrollView.bounds, to: contentView)
             let metalViewScaleMultiplier: CGFloat = CGFloat(max(1, Int(scrollView.zoomScale)))
@@ -312,20 +308,15 @@ extension ViewController: UIScrollViewDelegate {
                 width: visibleRect.width * metalViewScaleMultiplier,
                 height: visibleRect.height * metalViewScaleMultiplier
             )
+            let effectiveRect = CGRect(
+                x: max(visibleRect.x, 0) - (metalViewScaleMultiplier == 1 ? 0 : (effectiveRectSize.width - visibleRect.size.width) / 2),
+                y: max(visibleRect.y, 0) - (metalViewScaleMultiplier == 1 ? 0 : (effectiveRectSize.height - visibleRect.size.width) / 2),
+                width: effectiveRectSize.width,
+                height: effectiveRectSize.height
+            )
 
-            self.metalView.frame = CGRect(
-                x: max(visibleRect.x, 0) - (effectiveRectSize.width - visibleRect.size.width) / 2,
-                y: max(visibleRect.y, 0) - (effectiveRectSize.height - visibleRect.size.width) / 2,
-                width: effectiveRectSize.width,
-                height: effectiveRectSize.height
-            )
-            let newOrthoBounds = CGRect(
-                x: max(visibleRect.x, 0) - (effectiveRectSize.width - visibleRect.size.width) / 2,
-                y: max(visibleRect.y, 0) - (effectiveRectSize.height - visibleRect.size.width) / 2,
-                width: effectiveRectSize.width,
-                height: effectiveRectSize.height
-            )
-            self.metalView.contentBounds = newOrthoBounds
+            self.metalView.frame = effectiveRect
+            self.metalView.contentBounds = effectiveRect
         }
         worldView.updateWindow()
     }

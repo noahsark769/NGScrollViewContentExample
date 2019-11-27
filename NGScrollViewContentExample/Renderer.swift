@@ -27,7 +27,7 @@ class Renderer: NSObject, MTKViewDelegate {
     let commandQueue: MTLCommandQueue
     var dynamicUniformBuffer: MTLBuffer
     var pipelineState: MTLRenderPipelineState
-    var depthState: MTLDepthStencilState
+//    var depthState: MTLDepthStencilState
 
     let inFlightSemaphore = DispatchSemaphore(value: maxBuffersInFlight)
 
@@ -54,8 +54,8 @@ class Renderer: NSObject, MTKViewDelegate {
     init?(
         device: MTLDevice,
         sampleCount: Int,
-        colorPixelFormat: MTLPixelFormat,
-        depthStencilPixelFormat: MTLPixelFormat
+        colorPixelFormat: MTLPixelFormat
+//        depthStencilPixelFormat: MTLPixelFormat
     ) {
         self.device = device
         guard let queue = self.device.makeCommandQueue() else { return nil }
@@ -74,19 +74,19 @@ class Renderer: NSObject, MTKViewDelegate {
             pipelineState = try Renderer.buildRenderPipelineWithDevice(
                 device: device,
                 sampleCount: sampleCount,
-                colorPixelFormat: colorPixelFormat,
-                depthStencilPixelFormat: depthStencilPixelFormat
+                colorPixelFormat: colorPixelFormat
+//                depthStencilPixelFormat: depthStencilPixelFormat
             )
         } catch {
             print("Unable to compile render pipeline state.  Error info: \(error)")
             return nil
         }
 
-        let depthStateDesciptor = MTLDepthStencilDescriptor()
-        depthStateDesciptor.depthCompareFunction = MTLCompareFunction.less
-        depthStateDesciptor.isDepthWriteEnabled = true
-        guard let state = device.makeDepthStencilState(descriptor:depthStateDesciptor) else { return nil }
-        depthState = state
+//        let depthStateDesciptor = MTLDepthStencilDescriptor()
+//        depthStateDesciptor.depthCompareFunction = MTLCompareFunction.less
+//        depthStateDesciptor.isDepthWriteEnabled = true
+//        guard let state = device.makeDepthStencilState(descriptor:depthStateDesciptor) else { return nil }
+//        depthState = state
 
         var vertices: [Vertex] = []
         var indices: [UInt16] = []
@@ -140,8 +140,8 @@ class Renderer: NSObject, MTKViewDelegate {
     class func buildRenderPipelineWithDevice(
         device: MTLDevice,
         sampleCount: Int,
-        colorPixelFormat: MTLPixelFormat,
-        depthStencilPixelFormat: MTLPixelFormat
+        colorPixelFormat: MTLPixelFormat//,
+//        depthStencilPixelFormat: MTLPixelFormat
     ) throws -> MTLRenderPipelineState {
         /// Build a render state pipeline object
 
@@ -157,8 +157,8 @@ class Renderer: NSObject, MTKViewDelegate {
         pipelineDescriptor.fragmentFunction = fragmentFunction
 
         pipelineDescriptor.colorAttachments[0].pixelFormat = colorPixelFormat
-        pipelineDescriptor.depthAttachmentPixelFormat = depthStencilPixelFormat
-        pipelineDescriptor.stencilAttachmentPixelFormat = depthStencilPixelFormat
+//        pipelineDescriptor.depthAttachmentPixelFormat = depthStencilPixelFormat
+//        pipelineDescriptor.stencilAttachmentPixelFormat = depthStencilPixelFormat
 
         return try device.makeRenderPipelineState(descriptor: pipelineDescriptor)
     }
@@ -190,12 +190,12 @@ class Renderer: NSObject, MTKViewDelegate {
 //            projectionMatrix = matrix_ortho_projection(left: self.contentOffsetX, right: self.contentWidth * aspect, top: self.contentOffsetY, bottom: self.contentHeight, near: 1, far: -1)
 //        } else {
             // portrait mode
-        let effectiveRect = CGRect(
-            x: CGFloat(self.contentOffsetX),
-            y: CGFloat(self.contentOffsetY),
-            width: CGFloat(self.contentWidth),
-            height: CGFloat(self.contentHeight)
-        ).applying(CGAffineTransform(scaleX: CGFloat(1 / self.scale), y: CGFloat(1 / self.scale)))
+//        let effectiveRect = CGRect(
+//            x: CGFloat(self.contentOffsetX),
+//            y: CGFloat(self.contentOffsetY),
+//            width: CGFloat(self.contentWidth),
+//            height: CGFloat(self.contentHeight)
+//        ).applying(CGAffineTransform(scaleX: CGFloat(1 / self.scale), y: CGFloat(1 / self.scale)))
         projectionMatrix = matrix_ortho_projection(
 //            left: self.contentOffsetX,
 //            right: //max(
@@ -208,17 +208,22 @@ class Renderer: NSObject, MTKViewDelegate {
 //                Float(self.viewSize.height)
 //            ),
 //            bottom: (),
-            left: Float(effectiveRect.origin.x),
-            right: Float(effectiveRect.origin.x + effectiveRect.width),
-            top: Float(effectiveRect.origin.y),
-            bottom: Float(effectiveRect.origin.y + effectiveRect.height),
+//            left: Float(effectiveRect.origin.x),
+//            right: Float(effectiveRect.origin.x + effectiveRect.width),
+//            top: Float(effectiveRect.origin.y),
+//            bottom: Float(effectiveRect.origin.y + effectiveRect.height),
+            left: self.contentOffsetX,
+            right: self.contentOffsetX + self.contentWidth,
+            top: self.contentOffsetY,
+            bottom: self.contentOffsetY + self.contentHeight,
             near: 1,
             far: -1
         )
+        print("New proj matrix: \(projectionMatrix)")
 //        }
 
         uniforms[0].projectionMatrix = projectionMatrix
-        uniforms[0].modelViewMatrix = matrix4x4_identity()
+//        uniforms[0].modelViewMatrix = matrix4x4_identity()
 //            * matrix4x4_translation(self.contentOffsetX, self.contentOffsetY, 0)
 //            * matrix4x4_scale(x: self.scale, y: self.scale)
     }
@@ -287,7 +292,7 @@ class Renderer: NSObject, MTKViewDelegate {
 
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
         /// Respond to drawable size or orientation changes here
-        print("New DRAWABLE SIZE \(size)")
+//        print("New DRAWABLE SIZE \(size)")
 
 //        let squareSize: Float = 40
 //        let spacing: Float = 20
