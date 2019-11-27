@@ -8,9 +8,42 @@
 
 import UIKit
 
+extension CGRect {
+    var x: CGFloat { return self.origin.x }
+    var y: CGFloat { return self.origin.y }
+    var width: CGFloat { return self.size.width }
+    var height: CGFloat { return self.size.height }
+}
+
+extension CGFloat {
+    func clamped(min: CGFloat, max: CGFloat) -> CGFloat {
+        if self > max {
+            return max
+        } else if self < min {
+            return min
+        } else {
+            return self
+        }
+    }
+}
+
 extension UIColor {
     static func random() -> UIColor {
         return UIColor(hue: CGFloat(drand48()), saturation: 0.7, brightness: 1, alpha: 1)
+    }
+}
+
+final class CustomScrollView: UIScrollView {
+    override func layoutSubviews() {
+        super.layoutSubviews()
+//        for subview in subviews {
+//            if let view = subview as? MetalView {
+//                view.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
+////                view.layer.transform = .init(m11: 1, m12: 0, m13: 0, m14: 0, m21: 0, m22: 1, m23: 0, m24: 0, m31: 0, m32: 0, m33: 1, m34: 0, m41: 0, m42: 0, m43: 0, m44: 1)
+////                view.layer.position = .zero
+//                print("Metal subview: \(subview), frame: \(frame), bounds: \(bounds)")
+//            }
+//        }
     }
 }
 
@@ -55,7 +88,7 @@ class ViewController: UIViewController {
         view.spacing = 20
         return view
     }()
-    @objc dynamic private let scrollView = UIScrollView()
+    @objc dynamic private let scrollView = CustomScrollView()
     private let metalView = MetalView()
     private let contentView = UIView()
     private var hasSetInitialZoomScale = false
@@ -84,13 +117,15 @@ class ViewController: UIViewController {
 
     override func loadView() {
         view = UIView()
+        view.backgroundColor = .white
 
         contentView.addSubview(metalView)
-        metalView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.safeAreaLayoutGuide.leadingAnchor.constraint(equalTo: metalView.leadingAnchor).isActive = true
-        contentView.safeAreaLayoutGuide.trailingAnchor.constraint(equalTo: metalView.trailingAnchor).isActive = true
-        contentView.safeAreaLayoutGuide.topAnchor.constraint(equalTo: metalView.topAnchor).isActive = true
-        contentView.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: metalView.bottomAnchor).isActive = true
+        metalView.frame = CGRect(x: 0, y: 0, width: 10, height: 10)
+//        metalView.translatesAutoresizingMaskIntoConstraints = false
+//        contentView.safeAreaLayoutGuide.leadingAnchor.constraint(equalTo: metalView.leadingAnchor).isActive = true
+//        contentView.safeAreaLayoutGuide.trailingAnchor.constraint(equalTo: metalView.trailingAnchor).isActive = true
+//        contentView.safeAreaLayoutGuide.topAnchor.constraint(equalTo: metalView.topAnchor).isActive = true
+//        contentView.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: metalView.bottomAnchor).isActive = true
 
         view.addSubview(scrollView)
         scrollView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -150,6 +185,8 @@ class ViewController: UIViewController {
         worldView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12).isActive = true
         worldView.heightAnchor.constraint(equalToConstant: 100).isActive = true
         worldView.widthAnchor.constraint(equalToConstant: 100).isActive = true
+
+        self.metalView.scale = 1
 
 //        scrollView.bouncesZoom = false
 
@@ -290,11 +327,48 @@ extension ViewController: UIScrollViewDelegate {
 //            self.metalView.metalLayer.animationDuration = animation.duration
 //        }
             print("Rendering content view bounds: \(contentView.bounds)")
-            self.metalView.contentBounds = contentView.bounds
-            self.metalView.scale = 1
+//        self.metalView.frame = .zero
+//            print("Metal view updated frame: \(metalView.frame)")
+//        self.metalView.contentBounds = //scrollView.bounds
+//            scrollView.convert(scrollView.bounds, to: contentView)
+//            CGRect(
+//                x: max(scrollView.bounds.origin.x, 0),
+//                y: max(scrollView.bounds.origin.y, 0),
+//                width: scrollView.bounds.size.width,
+//                height: scrollView.bounds.size.height
+//            )//.applying(CGAffineTransform(scaleX: 1 / scrollView.zoomScale, y: 1 / scrollView.zoomScale))
+        if !scrollView.isZoomBouncing {
+        let effectiveZoomScale = scrollView.zoomScale.clamped(min: scrollView.minimumZoomScale, max: scrollView.maximumZoomScale)
+//            self.metalView.scale = 1//Float(scrollView.zoomScale)
+        let visibleRect = scrollView.convert(scrollView.bounds, to: contentView)
+        self.metalView.frame = CGRect(
+//            x: max(scrollView.bounds.origin.x / effectiveZoomScale, 0),
+//            x: 0,
+//            y: max(scrollView.bounds.origin.y / effectiveZoomScale, 0),
+//            y: 0,
+            x: max(visibleRect.x, 0),
+            y: max(visibleRect.y, 0),
+            width: visibleRect.width,
+            height: visibleRect.height
+        )//.applying(CGAffineTransform(scaleX: 1 / scrollView.zoomScale, y: 1 / scrollView.zoomScale))
 //        CATransaction.commit()
 //        }
 //        })
+        let newOrthoBounds = CGRect(
+            x: max(0, visibleRect.x),
+            y: max(0, visibleRect.y),
+            width: visibleRect.width,
+            height: visibleRect.height
+        )
+        print("--------")
+        print("visibleRect: \(visibleRect)")
+        print("metalView frame: \(metalView.frame)")
+        print("newOrthoBounds: \(newOrthoBounds)")
+        print("--------")
+            self.metalView.contentBounds = newOrthoBounds
+        }
+
+        print("Set new metalView frame: \(self.metalView.frame)")
 //        if self.contentView.layer.animationKeys() != nil {
 //            self.contentView.layer.removeAllAnimations()
 //        }
