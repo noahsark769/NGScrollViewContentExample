@@ -287,6 +287,7 @@ class Renderer: NSObject, MTKViewDelegate {
 
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
         /// Respond to drawable size or orientation changes here
+        print("New DRAWABLE SIZE \(size)")
 
 //        let squareSize: Float = 40
 //        let spacing: Float = 20

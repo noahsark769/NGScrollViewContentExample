@@ -300,85 +300,34 @@ extension ViewController: UIScrollViewDelegate {
     }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-//        print("scroll. is bouncing? \(scrollView.isZoomBouncing)")
-//        print("""
-//            Scroll view scrolled!
-//                contentoffset: \(scrollView.contentOffset),
-//                zoomScale: \(scrollView.zoomScale),
-//                contentSize: \(scrollView.contentSize),
-//                bounds: \(scrollView.bounds),
-//                presentationlayer position: \(self.contentView.layer.presentation()?.position),
-//                scrollViewAnimationKeys: \(self.contentView.layer.animationKeys())
-//        """)
-
-//        metalView.contentOffset = scrollView.contentOffset
-//        metalView.contentSize = scrollView.contentSize
-//        UIView.animate(withDuration: 2, animations: {
-//        if scrollView.zoomScale != 1 {
-//        CATransaction.begin()
-//        CATransaction.setAnimationDuration(5)
-//        CATransaction.begin()
-//        CATransaction.setDisableActions(true)
-        
-//            self.metalView.animationsEnabled = scrollView.isZoomBouncing && contentView.layer.animationKeys() != nil
-//        if let animation = contentView.layer.animation(forKey: "position") {
-//            // todo: serious demeter violation lol
-//            self.metalView.metalLayer.animationTimingFunction = animation.timingFunction
-//            self.metalView.metalLayer.animationDuration = animation.duration
-//        }
-            print("Rendering content view bounds: \(contentView.bounds)")
-//        self.metalView.frame = .zero
-//            print("Metal view updated frame: \(metalView.frame)")
-//        self.metalView.contentBounds = //scrollView.bounds
-//            scrollView.convert(scrollView.bounds, to: contentView)
-//            CGRect(
-//                x: max(scrollView.bounds.origin.x, 0),
-//                y: max(scrollView.bounds.origin.y, 0),
-//                width: scrollView.bounds.size.width,
-//                height: scrollView.bounds.size.height
-//            )//.applying(CGAffineTransform(scaleX: 1 / scrollView.zoomScale, y: 1 / scrollView.zoomScale))
+        print("""
+            Scroll view scrolled!
+                zoomScale: \(scrollView.zoomScale)
+        """)
         if !scrollView.isZoomBouncing {
-        let effectiveZoomScale = scrollView.zoomScale.clamped(min: scrollView.minimumZoomScale, max: scrollView.maximumZoomScale)
-//            self.metalView.scale = 1//Float(scrollView.zoomScale)
-        let visibleRect = scrollView.convert(scrollView.bounds, to: contentView)
-        self.metalView.frame = CGRect(
-//            x: max(scrollView.bounds.origin.x / effectiveZoomScale, 0),
-//            x: 0,
-//            y: max(scrollView.bounds.origin.y / effectiveZoomScale, 0),
-//            y: 0,
-            x: max(visibleRect.x, 0),
-            y: max(visibleRect.y, 0),
-            width: visibleRect.width,
-            height: visibleRect.height
-        )//.applying(CGAffineTransform(scaleX: 1 / scrollView.zoomScale, y: 1 / scrollView.zoomScale))
-//        CATransaction.commit()
-//        }
-//        })
-        let newOrthoBounds = CGRect(
-            x: max(0, visibleRect.x),
-            y: max(0, visibleRect.y),
-            width: visibleRect.width,
-            height: visibleRect.height
-        )
-        print("--------")
-        print("visibleRect: \(visibleRect)")
-        print("metalView frame: \(metalView.frame)")
-        print("newOrthoBounds: \(newOrthoBounds)")
-        print("--------")
+            let visibleRect = scrollView.convert(scrollView.bounds, to: contentView)
+            let metalViewScaleMultiplier: CGFloat = CGFloat(max(1, Int(scrollView.zoomScale)))
+
+            let effectiveRectSize = CGSize(
+                width: visibleRect.width * metalViewScaleMultiplier,
+                height: visibleRect.height * metalViewScaleMultiplier
+            )
+
+            self.metalView.frame = CGRect(
+                x: max(visibleRect.x, 0) - (effectiveRectSize.width - visibleRect.size.width) / 2,
+                y: max(visibleRect.y, 0) - (effectiveRectSize.height - visibleRect.size.width) / 2,
+                width: effectiveRectSize.width,
+                height: effectiveRectSize.height
+            )
+            let newOrthoBounds = CGRect(
+                x: max(visibleRect.x, 0) - (effectiveRectSize.width - visibleRect.size.width) / 2,
+                y: max(visibleRect.y, 0) - (effectiveRectSize.height - visibleRect.size.width) / 2,
+                width: effectiveRectSize.width,
+                height: effectiveRectSize.height
+            )
             self.metalView.contentBounds = newOrthoBounds
         }
-
-        print("Set new metalView frame: \(self.metalView.frame)")
-//        if self.contentView.layer.animationKeys() != nil {
-//            self.contentView.layer.removeAllAnimations()
-//        }
-
         worldView.updateWindow()
-//        CATransaction.commit()
-
-//        if scrollView.zoomScale != scrollView.minimumZoomScale && scrollView.zoomScale != scrollView.maximumZoomScale {
-//            self.lastScrollViewPosition = scrollView.bounds.origin
-//        }
     }
 
     func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
