@@ -40,7 +40,7 @@ class Renderer: NSObject, MTKViewDelegate {
     var projectionMatrix: matrix_float4x4 = matrix_float4x4()
 
     private let vertices: [Vertex]
-    private let indices: [UInt16]
+    private let indices: [UInt32]
     private let vertexBuffer: MTLBuffer
     private let indexBuffer: MTLBuffer
 
@@ -89,13 +89,13 @@ class Renderer: NSObject, MTKViewDelegate {
 //        depthState = state
 
         var vertices: [Vertex] = []
-        var indices: [UInt16] = []
+        var indices: [UInt32] = []
         let squareSize: Float = 40
         let spacing: Float = 20
         let offset: Float = 5
-        for y in 0..<20 {
-            for x in 0..<20 {
-                let currentVertexCount = UInt16(vertices.count)
+        for y in 0..<135 {
+            for x in 0..<135 {
+                let currentVertexCount = UInt32(vertices.count)
 
                 let xCoordinate = (squareSize + spacing) * Float(x)
                 let yCoordinate = (squareSize + spacing) * Float(y)
@@ -127,7 +127,7 @@ class Renderer: NSObject, MTKViewDelegate {
         }
         self.vertexBuffer = vertexBuffer
         self.vertices = vertices // we need to retain this since we're passing in a raw unsafe pointer
-        guard let indexBuffer = device.makeBuffer(bytes: UnsafeMutablePointer(mutating: indices), length: MemoryLayout<UInt16>.size * indices.count, options: [.cpuCacheModeWriteCombined]) else {
+        guard let indexBuffer = device.makeBuffer(bytes: UnsafeMutablePointer(mutating: indices), length: MemoryLayout<UInt32>.size * indices.count, options: [.cpuCacheModeWriteCombined]) else {
             fatalError("Unable to allocate index buffer")
         }
         self.indexBuffer = indexBuffer
@@ -272,7 +272,7 @@ class Renderer: NSObject, MTKViewDelegate {
                 renderEncoder.setVertexBuffer(self.vertexBuffer, offset: 0, index: 0)
                 renderEncoder.setVertexBuffer(dynamicUniformBuffer, offset:uniformBufferOffset, index: 1)
                 renderEncoder.setFragmentBuffer(dynamicUniformBuffer, offset:uniformBufferOffset, index: 0)
-                renderEncoder.drawIndexedPrimitives(type: .triangle, indexCount: self.indices.count, indexType: .uint16, indexBuffer: self.indexBuffer, indexBufferOffset: 0)
+                renderEncoder.drawIndexedPrimitives(type: .triangle, indexCount: self.indices.count, indexType: .uint32, indexBuffer: self.indexBuffer, indexBufferOffset: 0)
 
                 renderEncoder.popDebugGroup()
 

@@ -110,11 +110,11 @@ class ViewController: UIViewController {
         addColButton.topAnchor.constraint(equalTo: addRowButton.bottomAnchor).isActive = true
         addColButton.addTarget(self, action: #selector(addColumn), for: .touchUpInside)
 
-        for _ in 0..<20 {
+        for _ in 0..<135 {
             self.addColumn()
         }
 
-        for _ in 0..<20 {
+        for _ in 0..<135 {
             self.addRow()
         }
 
