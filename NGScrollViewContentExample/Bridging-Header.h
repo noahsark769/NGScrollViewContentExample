@@ -9,8 +9,6 @@
 #ifndef Bridging_Header_h
 #define Bridging_Header_h
 
-#import "ObservationHelpers.h"
 #import "ShaderTypes.h"
-#import "WorldView.h"
 
 #endif /* Bridging_Header_h */

@@ -113,8 +113,6 @@ class ViewController: UIViewController {
     var zoomScaleObservation: NSKeyValueObservation?
     var contentSizeObservation: NSKeyValueObservation?
 
-    private lazy var worldView = WorldView(scrollView: self.scrollView)!
-
     override func loadView() {
         view = UIView()
         view.backgroundColor = .white
@@ -178,13 +176,6 @@ class ViewController: UIViewController {
         for _ in 0..<20 {
             self.addRow()
         }
-
-        view.addSubview(worldView)
-        worldView.translatesAutoresizingMaskIntoConstraints = false
-        worldView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12).isActive = true
-        worldView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12).isActive = true
-        worldView.heightAnchor.constraint(equalToConstant: 100).isActive = true
-        worldView.widthAnchor.constraint(equalToConstant: 100).isActive = true
 
         self.metalView.scale = 1
 
@@ -318,7 +309,6 @@ extension ViewController: UIScrollViewDelegate {
             self.metalView.frame = effectiveRect
             self.metalView.contentBounds = effectiveRect
         }
-        worldView.updateWindow()
     }
 
     func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
@@ -335,7 +325,6 @@ extension ViewController: UIScrollViewDelegate {
 //        metalView.contentOffset = scrollView.contentOffset
 //        metalView.contentSize = scrollView.contentSize
 //        metalView.contentBounds = scrollView.bounds
-//        worldView.updateWindow()
 //
 //        if scrollView.zoomScale > 2 {
 ////            scrollView.isUserInteractionEnabled = false

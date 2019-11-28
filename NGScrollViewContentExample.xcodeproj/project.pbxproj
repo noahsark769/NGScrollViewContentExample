@@ -11,9 +11,6 @@
 		A130BDE32203602C00E586F6 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A130BDE22203602C00E586F6 /* ViewController.swift */; };
 		A130BDE82203602D00E586F6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A130BDE72203602D00E586F6 /* Assets.xcassets */; };
 		A130BDEB2203602D00E586F6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A130BDE92203602D00E586F6 /* LaunchScreen.storyboard */; };
-		D004ACAD2385DF66002896EC /* ObservationHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = D004ACAC2385DF66002896EC /* ObservationHelpers.m */; };
-		D004ACAF2385E052002896EC /* UnfairLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D004ACAE2385E052002896EC /* UnfairLock.swift */; };
-		D004ACBB2385FA97002896EC /* WorldView.m in Sources */ = {isa = PBXBuildFile; fileRef = D004ACBA2385FA97002896EC /* WorldView.m */; };
 		D0CC398323837AEF0009DF51 /* MetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0CC398223837AEF0009DF51 /* MetalView.swift */; };
 		D0CC398523837B6A0009DF51 /* Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0CC398423837B6A0009DF51 /* Renderer.swift */; };
 		D0CC398823837CF90009DF51 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = D0CC398723837CF90009DF51 /* Shaders.metal */; };
@@ -26,12 +23,7 @@
 		A130BDE72203602D00E586F6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A130BDEA2203602D00E586F6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		A130BDEC2203602D00E586F6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		D004ACAB2385DF66002896EC /* ObservationHelpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ObservationHelpers.h; sourceTree = "<group>"; };
-		D004ACAC2385DF66002896EC /* ObservationHelpers.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObservationHelpers.m; sourceTree = "<group>"; };
-		D004ACAE2385E052002896EC /* UnfairLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnfairLock.swift; sourceTree = "<group>"; };
 		D004ACB02385E10F002896EC /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
-		D004ACB92385FA97002896EC /* WorldView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WorldView.h; sourceTree = "<group>"; };
-		D004ACBA2385FA97002896EC /* WorldView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WorldView.m; sourceTree = "<group>"; };
 		D0CC398223837AEF0009DF51 /* MetalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalView.swift; sourceTree = "<group>"; };
 		D0CC398423837B6A0009DF51 /* Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
 		D0CC398623837BF10009DF51 /* ShaderTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderTypes.h; sourceTree = "<group>"; };
@@ -77,12 +69,7 @@
 				D0CC398423837B6A0009DF51 /* Renderer.swift */,
 				D0CC398623837BF10009DF51 /* ShaderTypes.h */,
 				D0CC398723837CF90009DF51 /* Shaders.metal */,
-				D004ACAB2385DF66002896EC /* ObservationHelpers.h */,
-				D004ACAC2385DF66002896EC /* ObservationHelpers.m */,
-				D004ACAE2385E052002896EC /* UnfairLock.swift */,
 				D004ACB02385E10F002896EC /* Bridging-Header.h */,
-				D004ACB92385FA97002896EC /* WorldView.h */,
-				D004ACBA2385FA97002896EC /* WorldView.m */,
 			);
 			path = NGScrollViewContentExample;
 			sourceTree = "<group>";
@@ -158,10 +145,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D0CC398523837B6A0009DF51 /* Renderer.swift in Sources */,
-				D004ACBB2385FA97002896EC /* WorldView.m in Sources */,
-				D004ACAF2385E052002896EC /* UnfairLock.swift in Sources */,
 				D0CC398323837AEF0009DF51 /* MetalView.swift in Sources */,
-				D004ACAD2385DF66002896EC /* ObservationHelpers.m in Sources */,
 				A130BDE32203602C00E586F6 /* ViewController.swift in Sources */,
 				A130BDE12203602C00E586F6 /* AppDelegate.swift in Sources */,
 				D0CC398823837CF90009DF51 /* Shaders.metal in Sources */,
