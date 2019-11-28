@@ -322,6 +322,7 @@ extension ViewController: UIScrollViewDelegate {
     }
 
     func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
+        metalView.layer.contentsScale = scale
 //        print("End zooming")
 //        print("""
 //            Scroll view ended zooming!
