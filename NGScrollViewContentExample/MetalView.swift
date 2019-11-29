@@ -89,10 +89,6 @@ class CustomMetalLayer: CAMetalLayer {
 
         if Self.customAnimatableKeys.contains(event) {
             let animation = CABasicAnimation(keyPath: event)
-//            if (effectiveLayer.animationKeys() ?? []).contains(event) {
-//                print("Might be a duplicate action!!")
-//                return super.action(forKey: event)
-//            }
             animation.fromValue = effectiveLayer.value(forKey: event) // ?
             animation.duration = self.animationDuration
             animation.timingFunction = self.animationTimingFunction
@@ -142,8 +138,6 @@ class MetalLayerView: UIView {
         }
         metalLayer.pixelFormat = .bgra8Unorm
         metalLayer.delegate = self
-//        metalLayer.allowsNextDrawableTimeout = false
-//        metalLayer.needsDisplayOnBoundsChange = true
         metalLayer.presentsWithTransaction = true
     }
 
@@ -154,37 +148,6 @@ class MetalLayerView: UIView {
     required init(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
-//    func makeBackingLayer() -> CALayer {
-//        metalLayer = CAMetalLayer()
-//        metalLayer.pixelFormat = .bgra8Unorm
-//        metalLayer.device = renderer.device
-//        metalLayer.delegate = self
-//
-//        // If you're using the strategy of .topLeft placement and not presenting with transaction
-//        // to just make the glitches less visible instead of eliminating them, it can help to make
-//        // the background color the same as the background of your app, so the glitch artifacts
-//        // (solid color bands at the edge of the window) are less visible.
-////        metalLayer.backgroundColor = CGColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 1.0)
-//
-//        metalLayer.allowsNextDrawableTimeout = false
-//
-//        // these properties are crucial to resizing working
-//        metalLayer.autoresizingMask = CAAutoresizingMask(arrayLiteral: [.layerHeightSizable, .layerWidthSizable])
-//        metalLayer.needsDisplayOnBoundsChange = true
-//        metalLayer.presentsWithTransaction = true
-//
-//        return metalLayer
-//    }
-
-//    override func setFrameSize(_ newSize: NSSize) {
-//        super.setFrameSize(newSize)
-//        renderer.viewportSize.x = UInt32(newSize.width)
-//        renderer.viewportSize.y = UInt32(newSize.height)
-//        // the conversion below is necessary for high DPI drawing
-//        metalLayer.drawableSize = convertToBacking(newSize)
-//        self.viewDidChangeBackingProperties()
-//    }
 
     override func display(_ layer: CALayer) {
         guard let metalLayer = self.layer as? CustomMetalLayer else {
@@ -219,7 +182,6 @@ final class MetalView: MTKView {
         get { return renderer.scale }
         set {
             renderer.scale = newValue
-//            print("New scale: \(newValue)")
             self.setNeedsDisplay()
         }
     }
@@ -246,16 +208,6 @@ final class MetalView: MTKView {
             self.renderer.contentOffsetY = Float(self.contentBounds.origin.y)
             self.renderer.contentWidth = Float(self.contentBounds.size.width)
             self.renderer.contentHeight = Float(self.contentBounds.size.height)
-//            print("""
-//                New bounds:
-//                x: \(self.contentBounds.x) - \(self.renderer.contentOffsetX)
-//                y: \(self.contentBounds.y) - \(self.renderer.contentOffsetY)
-//                width: \(self.contentBounds.width) - \(self.renderer.contentWidth)
-//                height: \(self.contentBounds.height) - \(self.renderer.contentHeight)
-//            """)
-//            print("""
-//                x: \(self.renderer.contentOffsetX)
-//            """)
             self.setNeedsDisplay()
         }
     }
@@ -277,7 +229,6 @@ final class MetalView: MTKView {
 //        self.isPaused = true
         self.enableSetNeedsDisplay = true
 
-//        self.depthStencilPixelFormat = MTLPixelFormat.depth32Float_stencil8
         self.sampleCount = 1
 
         guard let newRenderer = Renderer(device: self.device!, sampleCount: self.sampleCount, colorPixelFormat: self.colorPixelFormat) else {

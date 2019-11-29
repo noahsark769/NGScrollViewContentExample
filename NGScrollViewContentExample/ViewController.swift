@@ -90,9 +90,7 @@ class ViewController: UIViewController {
 
         // pin content size
         contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor).isActive = true
-//        contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor).isActive = true
         contentView.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
-//        contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
 
         scrollView.maximumZoomScale = 5
         scrollView.minimumZoomScale = 1
@@ -119,7 +117,6 @@ class ViewController: UIViewController {
         }
 
         self.metalView.scale = 1
-//        self.scrollView.bounces = false
     }
 
     @objc private func addColumn() {
@@ -151,7 +148,6 @@ class ViewController: UIViewController {
         colorView.backgroundColor = UIColor.random()
         colorView.heightAnchor.constraint(equalToConstant: 40).isActive = true
         colorView.widthAnchor.constraint(equalToConstant: 40).isActive = true
-//        colorView.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
         return colorView
     }
 
@@ -162,11 +158,6 @@ class ViewController: UIViewController {
 extension ViewController: UIScrollViewDelegate {
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         return self.contentView
-    }
-
-    func scrollViewDidZoom(_ scrollView: UIScrollView) {
-//        self.isDisabledForAnimation = false
-//        self.forceUpdateMetalView()
     }
 
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
@@ -180,8 +171,6 @@ extension ViewController: UIScrollViewDelegate {
     }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let visibleRect = scrollView.convert(scrollView.bounds, to: contentView)
-
         metalView.layer.contentsScale = CGFloat(max(
             Int(scrollView.zoomScale.clamped(
                 min: scrollView.minimumZoomScale, max: scrollView.maximumZoomScale
@@ -189,27 +178,12 @@ extension ViewController: UIScrollViewDelegate {
             1
         ))
 
-//        if visibleRect.maxX <= contentView.bounds.width {
-//            CATransaction.setCompletionBlock {
-//                print("OKYA YOU'RE GOOD GEEZ")
-//                self.isDisabledForAnimation = false
-//                self.forceUpdateMetalView()
-//            }
-//        }
-
         if (!scrollView.isZoomBouncing) {
             if (scrollView.isZooming) {
                 self.wasZoomingOnLastScroll = true
             } else if self.wasZoomingOnLastScroll {
-
-                    // If we were zooming on last scroll but not anymore, cancel everything
-                    print("THAT'S IT HOLD EVERYTHING")
-        //            self.scrollView.isUserInteractionEnabled = false
-        //            CATransaction.setCompletionBlock {
-        //                self.scrollView.isUserInteractionEnabled = true
-        //            }
-        //            self.scrollView.bounces = false
-                    self.isDisabledForAnimation = true
+                // If we were zooming on last scroll but not anymore, cancel everything
+                self.isDisabledForAnimation = true
             }
             if !scrollView.isZoomBouncing && !self.isDisabledForAnimation {
                 self.forceUpdateMetalView()
@@ -237,19 +211,7 @@ extension ViewController: UIScrollViewDelegate {
     }
 
     func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
-
-//        self.isDisabledForAnimation = false
         self.wasZoomingOnLastScroll = false
-//        self.scrollView.isUserInteractionEnabled = true
-//        print("END ZOOMING")
-    }
-
-    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
-//        print("END ANIMATIONNNNNNNN")
-    }
-
-    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-//        print("YE END DECELLERATE")
     }
 }
 

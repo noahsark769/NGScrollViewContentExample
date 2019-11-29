@@ -22,12 +22,10 @@ enum RendererError: Error {
 }
 
 class Renderer: NSObject, MTKViewDelegate {
-
     public let device: MTLDevice
     let commandQueue: MTLCommandQueue
     var dynamicUniformBuffer: MTLBuffer
     var pipelineState: MTLRenderPipelineState
-//    var depthState: MTLDepthStencilState
 
     let inFlightSemaphore = DispatchSemaphore(value: maxBuffersInFlight)
 
@@ -55,7 +53,6 @@ class Renderer: NSObject, MTKViewDelegate {
         device: MTLDevice,
         sampleCount: Int,
         colorPixelFormat: MTLPixelFormat
-//        depthStencilPixelFormat: MTLPixelFormat
     ) {
         self.device = device
         guard let queue = self.device.makeCommandQueue() else { return nil }
@@ -75,18 +72,11 @@ class Renderer: NSObject, MTKViewDelegate {
                 device: device,
                 sampleCount: sampleCount,
                 colorPixelFormat: colorPixelFormat
-//                depthStencilPixelFormat: depthStencilPixelFormat
             )
         } catch {
             print("Unable to compile render pipeline state.  Error info: \(error)")
             return nil
         }
-
-//        let depthStateDesciptor = MTLDepthStencilDescriptor()
-//        depthStateDesciptor.depthCompareFunction = MTLCompareFunction.less
-//        depthStateDesciptor.isDepthWriteEnabled = true
-//        guard let state = device.makeDepthStencilState(descriptor:depthStateDesciptor) else { return nil }
-//        depthState = state
 
         var vertices: [Vertex] = []
         var indices: [UInt32] = []
@@ -112,16 +102,6 @@ class Renderer: NSObject, MTKViewDelegate {
                 indices.append(currentVertexCount + 2)
             }
         }
-//        vertices.append(Vertex(position: SIMD3<Float>(0, 0, 0)))
-//        vertices.append(Vertex(position: SIMD3<Float>(1, 0, 0)))
-//        vertices.append(Vertex(position: SIMD3<Float>(0, 1, 0)))
-//        vertices.append(Vertex(position: SIMD3<Float>(1, 1, 0)))
-//        indices.append(0)
-//        indices.append(1)
-//        indices.append(2)
-//        indices.append(1)
-//        indices.append(3)
-//        indices.append(2)
         guard let vertexBuffer = device.makeBuffer(bytes: UnsafeMutablePointer(mutating: vertices), length: MemoryLayout<Vertex>.size * vertices.count, options: [.cpuCacheModeWriteCombined]) else {
             fatalError("Unable to allocate vertex buffer")
         }
@@ -140,8 +120,7 @@ class Renderer: NSObject, MTKViewDelegate {
     class func buildRenderPipelineWithDevice(
         device: MTLDevice,
         sampleCount: Int,
-        colorPixelFormat: MTLPixelFormat//,
-//        depthStencilPixelFormat: MTLPixelFormat
+        colorPixelFormat: MTLPixelFormat
     ) throws -> MTLRenderPipelineState {
         /// Build a render state pipeline object
 
@@ -157,8 +136,6 @@ class Renderer: NSObject, MTKViewDelegate {
         pipelineDescriptor.fragmentFunction = fragmentFunction
 
         pipelineDescriptor.colorAttachments[0].pixelFormat = colorPixelFormat
-//        pipelineDescriptor.depthAttachmentPixelFormat = depthStencilPixelFormat
-//        pipelineDescriptor.stencilAttachmentPixelFormat = depthStencilPixelFormat
 
         return try device.makeRenderPipelineState(descriptor: pipelineDescriptor)
     }
@@ -175,43 +152,7 @@ class Renderer: NSObject, MTKViewDelegate {
 
     private func updateGameState() {
         /// Update any game state before rendering
-
-//        let squareSize: Float = 40
-//        let spacing: Float = 20
-    //        let offset: Float = 5
-
-//        let worldWidth: Float = squareSize * 8 + spacing * 7
-//        let worldHeight: Float = squareSize * 8 + spacing * 7
-//        let aspect = Float(self.contentWidth) / Float(self.contentHeight)
-
-//        if self.contentWidth > self.contentHeight {
-//            // landscape mode
-//            // Does not work, need to account for content offset
-//            projectionMatrix = matrix_ortho_projection(left: self.contentOffsetX, right: self.contentWidth * aspect, top: self.contentOffsetY, bottom: self.contentHeight, near: 1, far: -1)
-//        } else {
-            // portrait mode
-//        let effectiveRect = CGRect(
-//            x: CGFloat(self.contentOffsetX),
-//            y: CGFloat(self.contentOffsetY),
-//            width: CGFloat(self.contentWidth),
-//            height: CGFloat(self.contentHeight)
-//        ).applying(CGAffineTransform(scaleX: CGFloat(1 / self.scale), y: CGFloat(1 / self.scale)))
         projectionMatrix = matrix_ortho_projection(
-//            left: self.contentOffsetX,
-//            right: //max(
-//                contentOffsetX + self.contentWidth,
-//                Float(self.viewSize.width)
-//            ),
-//            top: self.contentOffsetY,
-//            bottom: //max(
-//                (self.contentOffsetY + self.contentHeight) * 1 / aspect,
-//                Float(self.viewSize.height)
-//            ),
-//            bottom: (),
-//            left: Float(effectiveRect.origin.x),
-//            right: Float(effectiveRect.origin.x + effectiveRect.width),
-//            top: Float(effectiveRect.origin.y),
-//            bottom: Float(effectiveRect.origin.y + effectiveRect.height),
             left: self.contentOffsetX,
             right: self.contentOffsetX + self.contentWidth,
             top: self.contentOffsetY,
@@ -219,13 +160,8 @@ class Renderer: NSObject, MTKViewDelegate {
             near: 1,
             far: -1
         )
-//        print("New proj matrix: \(projectionMatrix)")
-//        }
 
         uniforms[0].projectionMatrix = projectionMatrix
-//        uniforms[0].modelViewMatrix = matrix4x4_identity()
-//            * matrix4x4_translation(self.contentOffsetX, self.contentOffsetY, 0)
-//            * matrix4x4_scale(x: self.scale, y: self.scale)
     }
 
     func draw(in view: MTKView) {
@@ -253,7 +189,6 @@ class Renderer: NSObject, MTKViewDelegate {
 
             /// Delay getting the currentRenderPassDescriptor until we absolutely need it to avoid
             ///   holding onto the drawable and blocking the display pipeline any longer than necessary
-//            let renderPassDescriptor = view.currentRenderPassDescriptor
 
             if let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: passDescriptor) {
 
@@ -267,8 +202,6 @@ class Renderer: NSObject, MTKViewDelegate {
 
                 renderEncoder.setRenderPipelineState(pipelineState)
 
-//                renderEncoder.setDepthStencilState(depthState)
-
                 renderEncoder.setVertexBuffer(self.vertexBuffer, offset: 0, index: 0)
                 renderEncoder.setVertexBuffer(dynamicUniformBuffer, offset:uniformBufferOffset, index: 1)
                 renderEncoder.setFragmentBuffer(dynamicUniformBuffer, offset:uniformBufferOffset, index: 0)
@@ -277,9 +210,6 @@ class Renderer: NSObject, MTKViewDelegate {
                 renderEncoder.popDebugGroup()
 
                 renderEncoder.endEncoding()
-//                if let drawable = drawable {
-//                    commandBuffer.present(drawable)
-//                }
             }
 
             commandBuffer.commit()
@@ -292,25 +222,6 @@ class Renderer: NSObject, MTKViewDelegate {
 
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
         /// Respond to drawable size or orientation changes here
-//        print("New DRAWABLE SIZE \(size)")
-
-//        let squareSize: Float = 40
-//        let spacing: Float = 20
-//    //        let offset: Float = 5
-//
-//        let worldWidth: Float = squareSize * 8 + spacing * 7
-//        let worldHeight: Float = squareSize * 8 + spacing * 7
-//        let aspect = Float(size.width) / Float(size.height)
-//
-//        if size.width > size.height {
-//            // landscape mode
-//            projectionMatrix = matrix_ortho_projection(left: 0, right: worldWidth * aspect, top: 0, bottom: worldHeight, near: 1, far: -1)
-//        } else {
-//            // portrait mode
-//            projectionMatrix = matrix_ortho_projection(left: 0, right: worldWidth, top: 0, bottom: worldHeight * 1 / aspect, near: 1, far: -1)
-//        }
-
-//        projectionMatrix = matrix_ortho_projection(left: 0, right: 2, top: 0, bottom: 2, near: 1, far: -1)
         self.viewSize = CGSize(width: size.width / view.contentScaleFactor, height: size.height / view.contentScaleFactor)
         view.setNeedsDisplay()
     }
