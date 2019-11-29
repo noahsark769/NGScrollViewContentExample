@@ -23,7 +23,6 @@ struct ColorInOut {
 
 struct Uniforms {
     float4x4 projectionMatrix;
-    float4x4 modelViewMatrix;
 };
 
 vertex ColorInOut vertexShader(device Vertex *vertices [[buffer(0)]],
@@ -33,7 +32,7 @@ vertex ColorInOut vertexShader(device Vertex *vertices [[buffer(0)]],
     ColorInOut out;
 
     float4 position = float4(vertices[vertexId].position, 1.0);
-    out.position = uniforms->projectionMatrix /** uniforms->modelViewMatrix*/ * position;
+    out.position = uniforms->projectionMatrix * position;
 
     return out;
 }
