@@ -181,6 +181,14 @@ extension ViewController: UIScrollViewDelegate {
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let visibleRect = scrollView.convert(scrollView.bounds, to: contentView)
+
+        metalView.layer.contentsScale = CGFloat(max(
+            Int(scrollView.zoomScale.clamped(
+                min: scrollView.minimumZoomScale, max: scrollView.maximumZoomScale
+            )),
+            1
+        ))
+
 //        if visibleRect.maxX <= contentView.bounds.width {
 //            CATransaction.setCompletionBlock {
 //                print("OKYA YOU'RE GOOD GEEZ")
@@ -229,7 +237,7 @@ extension ViewController: UIScrollViewDelegate {
     }
 
     func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
-        metalView.layer.contentsScale = scale
+
 //        self.isDisabledForAnimation = false
         self.wasZoomingOnLastScroll = false
 //        self.scrollView.isUserInteractionEnabled = true
