@@ -115,8 +115,6 @@ class ViewController: UIViewController {
         for _ in 0..<135 {
             self.addRow()
         }
-
-        self.metalView.scale = 1
     }
 
     @objc private func addColumn() {

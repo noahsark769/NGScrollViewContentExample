@@ -42,7 +42,6 @@ class Renderer: NSObject, MTKViewDelegate {
     private let vertexBuffer: MTLBuffer
     private let indexBuffer: MTLBuffer
 
-    var scale: Float = 1
     var contentOffsetX: Float = 0
     var contentOffsetY: Float = 0
     var contentWidth: Float = 0

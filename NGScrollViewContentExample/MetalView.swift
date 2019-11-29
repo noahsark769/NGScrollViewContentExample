@@ -54,7 +54,6 @@ class CustomMetalLayer: CAMetalLayer {
         } else {
             effectiveLayer = self
         }
-        renderer.scale = effectiveLayer.scale
         renderer.contentHeight = effectiveLayer.contentHeight
         renderer.contentWidth = effectiveLayer.contentWidth
         renderer.contentOffsetX = effectiveLayer.contentOffsetX
@@ -164,7 +163,7 @@ class MetalLayerView: UIView {
         colorAttachment.clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 0)
 
         if metalLayer.scaleAnimationsEnabled {
-            print("Animating render frame with scale: \(metalLayer.renderer.scale), contentOffset: \(metalLayer.renderer.contentOffsetX), \(metalLayer.renderer.contentOffsetY)")
+            print("Animating render frame with contentOffset: \(metalLayer.renderer.contentOffsetX), \(metalLayer.renderer.contentOffsetY)")
         }
 
         metalLayer.renderer.draw(
@@ -177,14 +176,6 @@ class MetalLayerView: UIView {
 
 final class MetalView: MTKView {
     var renderer: Renderer!
-
-    var scale: Float {
-        get { return renderer.scale }
-        set {
-            renderer.scale = newValue
-            self.setNeedsDisplay()
-        }
-    }
 
     var contentOffset: CGPoint = .zero {
         didSet {
