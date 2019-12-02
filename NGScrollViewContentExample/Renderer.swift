@@ -82,8 +82,8 @@ class Renderer: NSObject, MTKViewDelegate {
         let squareSize: Float = 40
         let spacing: Float = 20
         let offset: Float = 5
-        for y in 0..<135 {
-            for x in 0..<135 {
+        for y in 0..<500 {
+            for x in 0..<500 {
                 let currentVertexCount = UInt32(vertices.count)
 
                 let xCoordinate = (squareSize + spacing) * Float(x)

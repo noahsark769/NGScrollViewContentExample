@@ -43,6 +43,7 @@ class ViewController: UIViewController {
     @objc dynamic private let scrollView = UIScrollView()
     private let metalView = MetalView()
     private let contentView = UIView()
+    private var driver: ScrollViewFrameDriver<MetalView>!
 
     private let addRowButton: UIButton = {
         let button = UIButton()
@@ -91,6 +92,8 @@ class ViewController: UIViewController {
         // pin content size
         contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor).isActive = true
         contentView.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
+        contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor).isActive = true
+        contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
 
         scrollView.maximumZoomScale = 5
         scrollView.minimumZoomScale = 1
@@ -115,6 +118,8 @@ class ViewController: UIViewController {
         for _ in 0..<135 {
             self.addRow()
         }
+
+        driver = ScrollViewFrameDriver(view: metalView, scrollView: scrollView, contentView: contentView)
     }
 
     @objc private func addColumn() {
@@ -148,48 +153,28 @@ class ViewController: UIViewController {
         colorView.widthAnchor.constraint(equalToConstant: 40).isActive = true
         return colorView
     }
-
-    var isDisabledForAnimation: Bool = false
-    var wasZoomingOnLastScroll: Bool = false
 }
 
-extension ViewController: UIScrollViewDelegate {
-    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-        return self.contentView
+protocol ScrollViewFrameDrivable {
+    var contentBounds: CGRect { get set }
+}
+extension MetalView: ScrollViewFrameDrivable {}
+
+final class ScrollViewFrameDriver<ViewType: UIView & ScrollViewFrameDrivable> {
+    private var view: ViewType
+    private let scrollView: UIScrollView
+    private let contentView: UIView
+
+    private var isDisabledForAnimation: Bool = false
+    private var wasZoomingOnLastScroll: Bool = false
+
+    init(view: ViewType, scrollView: UIScrollView, contentView: UIView) {
+        self.view = view
+        self.scrollView = scrollView
+        self.contentView = contentView
     }
 
-    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-        self.isDisabledForAnimation = false
-        self.forceUpdateMetalView()
-    }
-
-    func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
-        self.isDisabledForAnimation = false
-        self.forceUpdateMetalView()
-    }
-
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        metalView.layer.contentsScale = CGFloat(max(
-            Int(scrollView.zoomScale.clamped(
-                min: scrollView.minimumZoomScale, max: scrollView.maximumZoomScale
-            )),
-            1
-        ))
-
-        if (!scrollView.isZoomBouncing) {
-            if (scrollView.isZooming) {
-                self.wasZoomingOnLastScroll = true
-            } else if self.wasZoomingOnLastScroll {
-                // If we were zooming on last scroll but not anymore, cancel everything
-                self.isDisabledForAnimation = true
-            }
-            if !scrollView.isZoomBouncing && !self.isDisabledForAnimation {
-                self.forceUpdateMetalView()
-            }
-        }
-    }
-
-    private func forceUpdateMetalView() {
+    private func forceUpdateView() {
         let visibleRect = scrollView.convert(scrollView.bounds, to: contentView)
         let metalViewScaleMultiplier: CGFloat = 2 // = CGFloat(max(1, Int(scrollView.zoomScale)))
 
@@ -204,12 +189,65 @@ extension ViewController: UIScrollViewDelegate {
             height: effectiveRectSize.height
         )
 
-        self.metalView.frame = effectiveRect
-        self.metalView.contentBounds = effectiveRect
+        self.view.frame = effectiveRect
+        self.view.contentBounds = effectiveRect
+    }
+
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        self.isDisabledForAnimation = false
+        self.forceUpdateView()
+    }
+
+    func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        self.isDisabledForAnimation = false
+        self.forceUpdateView()
+    }
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        view.layer.contentsScale = CGFloat(max(
+            Int(scrollView.zoomScale.clamped(
+                min: scrollView.minimumZoomScale, max: scrollView.maximumZoomScale
+            )),
+            1
+        ))
+
+        if (!scrollView.isZoomBouncing) {
+            if (scrollView.isZooming) {
+                self.wasZoomingOnLastScroll = true
+            } else if self.wasZoomingOnLastScroll {
+                // If we were zooming on last scroll but not anymore, cancel everything
+                self.isDisabledForAnimation = true
+            }
+            if !scrollView.isZoomBouncing && !self.isDisabledForAnimation {
+                self.forceUpdateView()
+            }
+        }
     }
 
     func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
         self.wasZoomingOnLastScroll = false
+    }
+}
+
+extension ViewController: UIScrollViewDelegate {
+    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+        return self.contentView
+    }
+
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        self.driver.scrollViewWillBeginDragging(scrollView)
+    }
+
+    func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        self.driver.scrollViewWillEndDragging(scrollView, withVelocity: velocity, targetContentOffset: targetContentOffset)
+    }
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        self.driver.scrollViewDidScroll(scrollView)
+    }
+
+    func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
+        self.driver.scrollViewDidEndZooming(scrollView, with: view, atScale: scale)
     }
 }
 
